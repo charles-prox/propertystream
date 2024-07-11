@@ -21,7 +21,9 @@
     },
     "dependencies": {
         "@nextui-org/react": "^2.2.10",
+        "@react-pdf/renderer": "^3.4.4",
         "framer-motion": "^11.0.24",
+        "he": "^1.2.0",
         "lodash": "^4.17.21"
     }
 }

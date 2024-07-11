@@ -3,6 +3,7 @@ import { HomeIcon } from "@/Icons/SidebarIcons/HomeIcon";
 import { FolderIcon } from "@/Icons/SidebarIcons/FolderIcon";
 import { UsersIcon } from "@/Icons/SidebarIcons/UsersIcon";
 import { ArrowRightIcon } from "@/Icons/ArrowRightIcon";
+import { PropertyIcon } from "@/Icons/SidebarIcons/PropertyIcon";
 import SidebarMenu from "./SidebarMenu";
 import { useSidebarViewState } from "@/SidebarViewStateProvider";
 
@@ -24,6 +25,12 @@ const items = [
         label: "Users",
         icon: (w, h) => <UsersIcon width={w} height={h} />,
         url: "/users",
+    },
+    {
+        key: "properties",
+        label: "Properties",
+        icon: (w, h) => <PropertyIcon width={w} height={h} />,
+        url: "/properties",
     },
 ];
 
