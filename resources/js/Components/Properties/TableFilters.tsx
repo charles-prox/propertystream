@@ -1,4 +1,5 @@
 import { FilterIcon } from "@/Icons/Properties/FilterIcon";
+import { DeleteIcon } from "@/Icons/TableIcons/DeleteIcon";
 import {
     Autocomplete,
     AutocompleteSection,
@@ -90,35 +91,44 @@ const TableFilters = () => {
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent>
-                    <div className="flex gap-3 py-2">
-                        <Autocomplete
-                            key={"column"}
-                            label="Select column to filter"
-                            className="max-w-xs"
-                        >
-                            {animals.map((animal) => (
-                                <AutocompleteItem
-                                    key={animal.value}
-                                    value={animal.value}
-                                >
-                                    {animal.label}
-                                </AutocompleteItem>
-                            ))}
-                        </Autocomplete>
-                        <Autocomplete
-                            key={"value"}
-                            label="Select column value"
-                            className="max-w-xs"
-                        >
-                            {animals.map((animal) => (
-                                <AutocompleteItem
-                                    key={animal.value}
-                                    value={animal.value}
-                                >
-                                    {animal.label}
-                                </AutocompleteItem>
-                            ))}
-                        </Autocomplete>
+                    <div className="py-2 flex flex-col gap-3 items-center">
+                        <div className="flex gap-3 items-center">
+                            <Autocomplete
+                                key={"column"}
+                                label="Select column to filter"
+                                className="max-w-xs"
+                            >
+                                {animals.map((animal) => (
+                                    <AutocompleteItem
+                                        key={animal.value}
+                                        value={animal.value}
+                                    >
+                                        {animal.label}
+                                    </AutocompleteItem>
+                                ))}
+                            </Autocomplete>
+                            <Autocomplete
+                                key={"value"}
+                                label="Select column value"
+                                className="max-w-xs"
+                            >
+                                {animals.map((animal) => (
+                                    <AutocompleteItem
+                                        key={animal.value}
+                                        value={animal.value}
+                                    >
+                                        {animal.label}
+                                    </AutocompleteItem>
+                                ))}
+                            </Autocomplete>
+                            <Button isIconOnly color="danger">
+                                <DeleteIcon />
+                            </Button>
+                        </div>
+                        <div className="flex gap-3">
+                            <Button>Add Filter</Button>
+                            <Button>Filter</Button>
+                        </div>
                     </div>
                 </PopoverContent>
             </Popover>
