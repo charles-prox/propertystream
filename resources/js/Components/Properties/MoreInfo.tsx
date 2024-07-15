@@ -1,15 +1,7 @@
-import { AcquiredIcon } from "@/Icons/MoreInfoIcons/AcquiredIcon";
-import { TVIcon } from "@/Icons/MoreInfoIcons/TVIcon";
-import { UserInfoIcon } from "@/Icons/MoreInfoIcons/UserInfoIcon";
-import { UserWarning } from "@/Icons/MoreInfoIcons/UserWarning";
-import { InfoIcon } from "@/Icons/TableIcons/InfoIcon";
 import {
     Button,
-    Checkbox,
     Chip,
     Divider,
-    Input,
-    Link,
     Modal,
     ModalBody,
     ModalContent,
@@ -21,6 +13,11 @@ import {
 } from "@nextui-org/react";
 import he from "he";
 import React from "react";
+import { UserWarning } from "../../Icons/Properties/MoreInfoIcons/UserWarning";
+import { AcquiredIcon } from "../../Icons/Properties/MoreInfoIcons/AcquiredIcon";
+import { UserInfoIcon } from "../../Icons/Properties/MoreInfoIcons/UserInfoIcon";
+import { TVIcon } from "../../Icons/Properties/MoreInfoIcons/TVIcon";
+import { InfoIcon } from "../../Icons/TableIcons/InfoIcon";
 
 const statusColorMap = {
     deployed: "success",
@@ -94,9 +91,13 @@ const MoreInfo = ({ item }) => {
                                                         Property name
                                                     </p>
                                                     <p className="text-default-600 text-sm">
-                                                        {he.decode(
-                                                            he.decode(item.name)
-                                                        )}
+                                                        {item.name
+                                                            ? he.decode(
+                                                                  he.decode(
+                                                                      item.name
+                                                                  )
+                                                              )
+                                                            : "---"}
                                                     </p>
                                                 </div>
                                                 <div className="flex">
@@ -104,7 +105,9 @@ const MoreInfo = ({ item }) => {
                                                         Serial number
                                                     </p>
                                                     <p className="text-default-600 text-sm capitalize">
-                                                        {item.serial}
+                                                        {item.serial
+                                                            ? item.serial
+                                                            : "---"}
                                                     </p>
                                                 </div>
                                                 <div className="flex">
@@ -112,7 +115,9 @@ const MoreInfo = ({ item }) => {
                                                         Asset Tag
                                                     </p>
                                                     <p className="text-default-600 text-sm capitalize">
-                                                        {item.asset_tag}
+                                                        {item.asset_tag
+                                                            ? item.asset_tag
+                                                            : "---"}
                                                     </p>
                                                 </div>
                                                 <div className="flex">
@@ -120,7 +125,9 @@ const MoreInfo = ({ item }) => {
                                                         Category
                                                     </p>
                                                     <p className="text-default-600 text-sm capitalize">
-                                                        {item.category.name}
+                                                        {item.category
+                                                            ? item.category.name
+                                                            : "---"}
                                                     </p>
                                                 </div>
                                                 <div className="flex">
@@ -128,7 +135,9 @@ const MoreInfo = ({ item }) => {
                                                         Model
                                                     </p>
                                                     <p className="text-default-600 text-sm capitalize">
-                                                        {item.model.name}
+                                                        {item.model
+                                                            ? item.model.name
+                                                            : "---"}
                                                     </p>
                                                 </div>
                                                 <div className="flex">
@@ -136,7 +145,10 @@ const MoreInfo = ({ item }) => {
                                                         Manufacturer
                                                     </p>
                                                     <p className="text-default-600 text-sm capitalize">
-                                                        {item.manufacturer.name}
+                                                        {item.manufacturer
+                                                            ? item.manufacturer
+                                                                  .name
+                                                            : "---"}
                                                     </p>
                                                 </div>
                                             </div>
@@ -189,11 +201,11 @@ const MoreInfo = ({ item }) => {
                                                                 Address
                                                             </p>
                                                             <p className="text-default-600 text-sm capitalize">
-                                                                {
-                                                                    item
-                                                                        .location
-                                                                        .name
-                                                                }
+                                                                {item.location
+                                                                    ? item
+                                                                          .location
+                                                                          .name
+                                                                    : "---"}
                                                             </p>
                                                         </div>
                                                         <div className="flex">
@@ -201,10 +213,11 @@ const MoreInfo = ({ item }) => {
                                                                 Company
                                                             </p>
                                                             <p className="text-default-600 text-sm capitalize">
-                                                                {
-                                                                    item.company
-                                                                        .name
-                                                                }
+                                                                {item.company
+                                                                    ? item
+                                                                          .company
+                                                                          .name
+                                                                    : "---"}
                                                             </p>
                                                         </div>
                                                     </>
@@ -243,7 +256,9 @@ const MoreInfo = ({ item }) => {
                                                         Supplier
                                                     </p>
                                                     <p className="text-default-600 text-sm">
-                                                        {item.supplier.name}
+                                                        {item.supplier
+                                                            ? item.supplier.name
+                                                            : "Unknown"}
                                                     </p>
                                                 </div>
                                                 <div className="flex">
@@ -251,9 +266,11 @@ const MoreInfo = ({ item }) => {
                                                         Cost
                                                     </p>
                                                     <p className="text-default-600 text-sm capitalize">
-                                                        {parseFloat(
-                                                            item.purchase_cost
-                                                        ).toLocaleString()}
+                                                        {item.purchase_cost
+                                                            ? parseFloat(
+                                                                  item.purchase_cost
+                                                              ).toLocaleString()
+                                                            : "---"}
                                                     </p>
                                                 </div>
                                                 <div className="flex">
@@ -261,10 +278,10 @@ const MoreInfo = ({ item }) => {
                                                         Purchase date
                                                     </p>
                                                     <p className="text-default-600 text-sm capitalize">
-                                                        {
-                                                            item.purchase_date
-                                                                .date
-                                                        }
+                                                        {item.purchase_date
+                                                            ? item.purchase_date
+                                                                  .date
+                                                            : "---"}
                                                     </p>
                                                 </div>
                                             </div>

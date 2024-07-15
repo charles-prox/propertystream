@@ -37,8 +37,6 @@ const statusColorMap = {
     "For Disposal": "danger",
 };
 
-const maxSelections = 10;
-
 const PropertyDataTable = ({ searchKey }) => {
     const { properties } = usePage().props;
     const [loadingState, setLoadingState] = useState("idle");
