@@ -1,11 +1,10 @@
 <?php
 
 use App\Http\Controllers\Auth\RegisteredUserController;
-use App\Http\Controllers\OfficeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PropertyController;
+use App\Http\Controllers\PropertyDetailsController;
 use App\Http\Controllers\UsersController;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -32,6 +31,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::resource('users', UsersController::class);
     Route::get('/properties', [PropertyController::class, 'index'])->name('properties');
+    Route::post('/properties/details', [PropertyDetailsController::class, 'store'])->name('properties.details');
     Route::get('registration/form/get/offices&roles', [RegisteredUserController::class, 'getOfficesAndRoles'])->name('registration.get.offices&roles');
 });
 

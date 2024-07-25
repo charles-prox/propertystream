@@ -21,8 +21,6 @@ Route::middleware('guest')->group(function () {
 
     Route::post('login', [AuthenticatedSessionController::class, 'store'])->middleware(CheckForAdminRegistration::class);
 
-
-
     Route::get('register/admin', [RegisterAdminController::class, 'create'])->middleware(CheckForExistingUsers::class)
         ->name('register.admin');
 

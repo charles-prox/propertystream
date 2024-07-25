@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { usePage, useForm } from "@inertiajs/react";
-import { asset } from "@/utils";
+import { asset } from "@/utils/helpers";
 import {
     Dropdown,
     DropdownTrigger,
@@ -30,7 +30,8 @@ const Logo = () => {
             <Image
                 width={45}
                 alt="App logo"
-                src={asset("charles-logo.png")}
+                src={asset("PropertyStream.png")}
+                // src={asset("charles-logo.png")}
                 loading="lazy"
                 removeWrapper
             />
@@ -65,12 +66,8 @@ const AppNavbar = () => {
                     {/* Change this section into your logo */}
                     <Logo />
                     <Spacer x="2" />
-                    <div className="hidden sm:flex text-xl font-bold ">
-                        Argus
-                        <span className="text-teal-500 dark:text-indigo-500 text-2xl font-black">
-                            X
-                        </span>
-                        Codes
+                    <div className="hidden sm:flex text-xl font-bold">
+                        PropertyStream
                     </div>
                 </NavbarBrand>
                 <NavbarContent justify="end">

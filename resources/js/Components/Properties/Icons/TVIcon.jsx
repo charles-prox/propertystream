@@ -1,10 +1,9 @@
 import React from "react";
 
-export const TVIcon = () => {
+export const TVIcon = (props) => {
     return (
         <svg
-            height="28px"
-            width="28px"
+            {...props}
             version="1.1"
             id="_x32_"
             xmlns="http://www.w3.org/2000/svg"

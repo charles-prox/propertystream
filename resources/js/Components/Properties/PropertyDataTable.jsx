@@ -8,27 +8,21 @@ import {
     TableCell,
     Pagination,
     Chip,
-    Tooltip,
     Spinner,
     Select,
     SelectItem,
     Button,
+    Divider,
 } from "@nextui-org/react";
 import { router, usePage } from "@inertiajs/react";
 import { PdfIcon } from "@/Icons/TableIcons/PdfIcon";
-import debounce from "lodash/debounce";
-import he from "he";
 import MoreInfo from "./MoreInfo";
+import SelectionAlert from "./SelectionAlert";
+import EmptyContent from "./EmptyContent";
+import GenerationDialog from "./GenerationDialog";
+import DetailsFormDialog from "./DetailsFormDialog";
+import { decodeHtmlEntities } from "@/utils/helpers";
 
-const columns = [
-    { name: "NAME", uid: "property_name" },
-    { name: "CATEGORY", uid: "category" },
-    { name: "ASSIGNED TO", uid: "assigned_to" },
-    { name: "PROPERTY TAG", uid: "property_tag" },
-    { name: "SUPPLIER", uid: "supplier" },
-    { name: "STATUS", uid: "status" },
-    { name: "ACTIONS", uid: "actions" },
-];
 const statusColorMap = {
     deployed: "success",
     deployable: "warning",
@@ -37,23 +31,63 @@ const statusColorMap = {
     "For Disposal": "danger",
 };
 
-const PropertyDataTable = ({ searchKey }) => {
-    const { properties } = usePage().props;
-    const [loadingState, setLoadingState] = useState("idle");
-    const [selectedKeys, setSelectedKeys] = useState(new Set([]));
+const PropertyDataTable = ({ searchKey, columns, resetSearch }) => {
+    const { properties, properties_with_details } = usePage().props;
+    // Load the table options from session storage on component mount
     const assetsTableOptions = JSON.parse(
         sessionStorage.getItem("assetsTableOptions")
     );
+    // Load the selections from session storage on component mount
+    const selectedPropertyKeys = JSON.parse(
+        sessionStorage.getItem("selectedPropertyKeys")
+    );
+    const [loadingState, setLoadingState] = useState("idle");
+    const [disabledKeys, setDisabledKeys] = useState([]);
+    const [property, setProperty] = useState(-1);
+    const [selectedKeys, setSelectedKeys] = useState(
+        new Set(selectedPropertyKeys || [])
+    );
+    const [isAlertOpen, setIsAlertOpen] = useState(false);
+    const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
+    const [isDialogFormOpen, setIsDialogFormOpen] = useState(false);
+
+    const [sortDescriptor, setSortDescriptor] = useState({
+        column: "name",
+        direction: "ascending",
+    });
     const [tableOptions, setTableOptions] = useState(
         assetsTableOptions || {
             current_page: 1,
             per_page: 10,
-            sort_by: "id:asc",
+            sort_by: "",
+            order_by: "",
             search_key: "",
         }
     );
 
     const pages = Math.ceil(properties.total / tableOptions.per_page);
+
+    // initialize disabled rows in the table
+    useEffect(() => {
+        const newDisabledKeys = properties.rows
+            .filter(
+                (item) =>
+                    item.status_label.status_meta === "deployable" ||
+                    item.status_label.status_meta === "pending"
+            )
+            .map((item) => item.id.toString());
+        setDisabledKeys(newDisabledKeys);
+    }, [properties]);
+
+    // saves the keys of the selected rows in the session storage
+    useEffect(() => {
+        const selectionArray = Array.from(selectedKeys);
+
+        sessionStorage.setItem(
+            "selectedPropertyKeys",
+            JSON.stringify(selectionArray)
+        );
+    }, [selectedKeys]);
 
     // Execute fetchData function every time there are changes in tableOptions
     useEffect(() => {
@@ -64,6 +98,17 @@ const PropertyDataTable = ({ searchKey }) => {
         fetchData();
     }, [tableOptions]);
 
+    // Update tableOptions every time searchKey is updated
+    useEffect(() => {
+        if (searchKey) {
+            setTableOptions((prevState) => ({
+                ...prevState,
+                search_key: searchKey,
+            }));
+        }
+    }, [searchKey]);
+
+    // Function to fetch/update data from third party api
     const fetchData = () => {
         router.get(route("properties"), tableOptions, {
             only: ["properties"],
@@ -78,15 +123,53 @@ const PropertyDataTable = ({ searchKey }) => {
         });
     };
 
+    // This function handles the changes in sorting the table
+    const handleTableSort = (descriptor) => {
+        const direction = descriptor.direction === "ascending" ? "asc" : "desc";
+        const column = descriptor.column;
+        setSortDescriptor(descriptor);
+        setTableOptions((prevState) => ({
+            ...prevState,
+            sort_by: column,
+            order_by: direction,
+        }));
+    };
+
+    const handleSelection = (keys) => {
+        if (disabledKeys.includes(keys.currentKey)) {
+            setIsAlertOpen(true);
+        } else {
+            if (
+                keys.currentKey &&
+                !properties_with_details.includes(keys.currentKey)
+            ) {
+                setProperty(keys.currentKey);
+                setIsDialogFormOpen(true);
+            }
+
+            properties_with_details.includes(keys.currentKey) &&
+                setSelectedKeys(keys);
+        }
+    };
+
+    const handleResetTable = () => {
+        resetSearch();
+        setTableOptions((prevState) => ({
+            ...prevState,
+            search_key: "",
+        }));
+    };
+
+    // This function is used to dynamically process and render values in the table
     const renderCell = useCallback((item, columnKey) => {
         const cellValue = item.id;
 
         switch (columnKey) {
-            case "property_name":
+            case "name":
                 return (
                     <div className="flex flex-col">
                         <p className="text-bold text-sm capitalize">
-                            {he.decode(he.decode(item.name))}
+                            {decodeHtmlEntities(item.name)}
                         </p>
                         <p className="text-bold text-sm capitalize text-default-400">
                             {item.serial}
@@ -123,7 +206,7 @@ const PropertyDataTable = ({ searchKey }) => {
                             )}
                     </div>
                 );
-            case "property_tag":
+            case "asset_tag":
                 return (
                     <div className="flex flex-col">
                         <p className="text-bold text-sm capitalize">
@@ -172,6 +255,7 @@ const PropertyDataTable = ({ searchKey }) => {
         }
     }, []);
 
+    // This is the pagination of the table
     const PaginationBar = () => {
         return (
             <div className="flex w-full justify-between">
@@ -224,30 +308,44 @@ const PropertyDataTable = ({ searchKey }) => {
         );
     };
 
+    // This is the header that shows when at least a row is selected
     const SelectionActions = () => {
         return (
             <div className="flex items-end justify-between">
-                <p
-                    className={`text-default-500 text-sm ${
+                <div
+                    className={`flex gap-3 items-center ${
                         selectedKeys.size <= 0 && "invisible"
-                    }`}
+                    } `}
                 >
-                    Selected{" "}
-                    <span>
-                        {selectedKeys === "all"
-                            ? properties.total
-                            : selectedKeys.size}
-                    </span>{" "}
-                    out of <span>{properties.total}</span> properties
-                </p>
+                    <p className={`text-default-500 text-sm `}>
+                        Selected{" "}
+                        <span>
+                            {selectedKeys === "all"
+                                ? properties.total
+                                : selectedKeys.size}
+                        </span>{" "}
+                        out of <span> {properties.total}</span> properties
+                    </p>
+                    <Divider orientation="vertical" className="h-4" />
+                    <Button
+                        variant="light"
+                        color="danger"
+                        size="sm"
+                        // className="text-default-500"
+                        onClick={() => setSelectedKeys(new Set([]))}
+                    >
+                        Unselect All
+                    </Button>
+                </div>
                 <Button
                     size="sm"
-                    variant="bordered"
+                    variant="flat"
                     color="primary"
                     startContent={
-                        <PdfIcon width={25} height={25} fill={"#14b8a5"} />
+                        <PdfIcon width={25} height={25} fill={"currentColor"} />
                     }
                     className={selectedKeys.size <= 0 && "invisible"}
+                    onClick={() => setIsDialogOpen(true)}
                 >
                     Generate Form
                 </Button>
@@ -256,43 +354,72 @@ const PropertyDataTable = ({ searchKey }) => {
     };
 
     return (
-        <Table
-            className="property-table"
-            aria-label="Property Table"
-            selectionMode="multiple"
-            bottomContentPlacement="outside"
-            onSelectionChange={setSelectedKeys}
-            topContent={<SelectionActions />}
-            bottomContent={<PaginationBar />}
-        >
-            <TableHeader columns={columns}>
-                {(column) => (
-                    <TableColumn
-                        key={column.uid}
-                        align={column.uid === "actions" ? "center" : "start"}
-                        allowsSorting={
-                            column.uid !== "status" && column.uid !== "actions"
-                        }
-                    >
-                        {column.name}
-                    </TableColumn>
-                )}
-            </TableHeader>
-            <TableBody
-                items={properties.rows}
-                loadingContent={<Spinner />}
-                loadingState={loadingState}
-                emptyContent={"No users found."}
+        <div>
+            <Table
+                className="property-table"
+                aria-label="Property Table"
+                selectionMode="multiple"
+                bottomContentPlacement="outside"
+                topContent={<SelectionActions />}
+                bottomContent={<PaginationBar />}
+                sortDescriptor={sortDescriptor}
+                onSortChange={handleTableSort}
+                selectedKeys={[...selectedKeys]}
+                onSelectionChange={handleSelection}
             >
-                {(item) => (
-                    <TableRow key={item.id}>
-                        {(columnKey) => (
-                            <TableCell>{renderCell(item, columnKey)}</TableCell>
-                        )}
-                    </TableRow>
-                )}
-            </TableBody>
-        </Table>
+                <TableHeader columns={columns}>
+                    {(column) => (
+                        <TableColumn
+                            key={column.uid}
+                            align={
+                                column.uid === "actions" ? "center" : "start"
+                            }
+                            allowsSorting={
+                                column.uid !== "status" &&
+                                column.uid !== "actions"
+                            }
+                        >
+                            {column.name}
+                        </TableColumn>
+                    )}
+                </TableHeader>
+                <TableBody
+                    items={properties.rows}
+                    loadingContent={<Spinner />}
+                    loadingState={loadingState}
+                    emptyContent={
+                        <EmptyContent resetTable={() => handleResetTable()} />
+                    }
+                >
+                    {(item) => (
+                        <TableRow key={item.id}>
+                            {(columnKey) => (
+                                <TableCell>
+                                    {renderCell(item, columnKey)}
+                                </TableCell>
+                            )}
+                        </TableRow>
+                    )}
+                </TableBody>
+            </Table>
+
+            {/* This component alerts the user that the row is not selectable */}
+            <SelectionAlert
+                isOpen={isAlertOpen}
+                setIsAlertOpen={(state) => setIsAlertOpen(state)}
+            />
+            {/* This component is a dialog to generate form*/}
+            <GenerationDialog
+                isOpen={isGenerateDialogOpen}
+                setIsDialogOpen={(state) => setIsGenerateDialogOpen(state)}
+            />
+            {/* This component is a form to add required details to each property before generating the form*/}
+            <DetailsFormDialog
+                isOpen={isDialogFormOpen}
+                setIsDialogOpen={(state) => setIsDialogFormOpen(state)}
+                property={property}
+            />
+        </div>
     );
 };
 

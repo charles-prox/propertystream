@@ -3,6 +3,13 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+    font-family: "Be Vietnam";
+    src: url("/fonts/Be_Vietnam_Pro/BeVietnamPro-Regular.ttf") format("ttf");
+    font-weight: normal;
+    font-style: normal;
+}
+
 [data-slot="base"] > [data-slot="input-wrapper"] {
     @apply border-neutral-500;
 }

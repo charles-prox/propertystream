@@ -16,7 +16,7 @@ import {
 import { useForm } from "@inertiajs/react";
 import { useTheme } from "@/ThemeProvider";
 import PasswordInput from "@/Components/PasswordInput";
-import { employmentStatus } from "@/utils";
+import { employmentStatus } from "@/utils/helpers";
 import Alert from "../Alert";
 
 export default function RegisterUser() {

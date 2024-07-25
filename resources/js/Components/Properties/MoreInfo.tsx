@@ -13,10 +13,10 @@ import {
 } from "@nextui-org/react";
 import he from "he";
 import React from "react";
-import { UserWarning } from "../../Icons/Properties/MoreInfoIcons/UserWarning";
-import { AcquiredIcon } from "../../Icons/Properties/MoreInfoIcons/AcquiredIcon";
-import { UserInfoIcon } from "../../Icons/Properties/MoreInfoIcons/UserInfoIcon";
-import { TVIcon } from "../../Icons/Properties/MoreInfoIcons/TVIcon";
+import { UserWarning } from "./Icons/UserWarning";
+import { AcquiredIcon } from "./Icons/AcquiredIcon";
+import { UserInfoIcon } from "./Icons/UserInfoIcon";
+import { TVIcon } from "./Icons/TVIcon";
 import { InfoIcon } from "../../Icons/TableIcons/InfoIcon";
 
 const statusColorMap = {
@@ -53,7 +53,7 @@ const MoreInfo = ({ item }) => {
                 <ModalContent>
                     {(onClose) => (
                         <>
-                            <ModalHeader>Property Information</ModalHeader>
+                            <ModalHeader>Property Overview</ModalHeader>
                             <ModalBody>
                                 <div className="flex gap-10">
                                     <p className="font-medium ">Status: </p>
@@ -80,7 +80,11 @@ const MoreInfo = ({ item }) => {
                                     <div className="flex flex-col gap-1">
                                         <div className="flex flex-row gap-3">
                                             <div>
-                                                <TVIcon />
+                                                <TVIcon
+                                                    width={28}
+                                                    height={28}
+                                                    fill={"currentColor"}
+                                                />
                                             </div>
                                             <div className="flex-grow">
                                                 <h5 className="mb-4 font-bold">

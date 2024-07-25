@@ -20,7 +20,7 @@ import { InfoIcon } from "@/Icons/TableIcons/InfoIcon";
 import { DeleteIcon } from "@/Icons/TableIcons/DeleteIcon";
 import { EditIcon } from "@/Icons/TableIcons/EditIcon";
 import debounce from "lodash/debounce";
-import { asset } from "@/utils";
+import { asset } from "@/utils/helpers";
 
 const columns = [
     { name: "NAME", uid: "name" },
@@ -189,7 +189,6 @@ const DataTable = ({ searchKey }) => {
             aria-label="Users data table"
             sortDescriptor={sortDescriptor}
             onSortChange={(descriptor) => {
-                console.log("descriptor: " + JSON.stringify(descriptor));
                 const direction =
                     descriptor.direction === "ascending" ? "asc" : "desc";
                 const column =

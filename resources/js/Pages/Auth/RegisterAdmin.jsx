@@ -8,7 +8,7 @@ import {
     AutocompleteItem,
 } from "@nextui-org/react";
 import PasswordInput from "@/Components/PasswordInput";
-import { employmentStatus } from "@/utils";
+import { employmentStatus } from "@/utils/helpers";
 
 export default function RegisterAdmin() {
     const { data, setData, post, processing, errors, reset } = useForm({

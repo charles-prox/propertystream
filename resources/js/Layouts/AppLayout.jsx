@@ -9,7 +9,7 @@ import { Spacer } from "@nextui-org/react";
 
 const AppLayout = ({ children }) => {
     const { component } = usePage();
-    const { sidebarView, toggleSidebarView } = useSidebarViewState();
+    const { sidebarView } = useSidebarViewState();
     const theme = useTheme().theme;
 
     switch (component.startsWith("Auth/")) {

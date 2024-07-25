@@ -1,134 +1,250 @@
-import { FilterIcon } from "@/Icons/Properties/FilterIcon";
+import { AddIcon } from "@/Components/Properties/Icons/AddIcon";
+import { EraserIcon } from "@/Components/Properties/Icons/EraserIcon";
+import { FilterIcon } from "@/Components/Properties/Icons/FilterIcon";
+import { SaveIcon } from "@/Components/Properties/Icons/SaveIcon";
 import { DeleteIcon } from "@/Icons/TableIcons/DeleteIcon";
-import {
-    Autocomplete,
-    AutocompleteSection,
-    AutocompleteItem,
-} from "@nextui-org/autocomplete";
+import { Autocomplete, AutocompleteItem } from "@nextui-org/autocomplete";
 import {
     Button,
     Popover,
     PopoverTrigger,
     PopoverContent,
+    Input,
+    Badge,
+    Spacer,
 } from "@nextui-org/react";
-import { color } from "framer-motion";
 import React from "react";
 
-const animals = [
-    {
-        label: "Cat",
-        value: "cat",
-        description: "The second most popular pet in the world",
-    },
-    {
-        label: "Dog",
-        value: "dog",
-        description: "The most popular pet in the world",
-    },
-    {
-        label: "Elephant",
-        value: "elephant",
-        description: "The largest land animal",
-    },
-    { label: "Lion", value: "lion", description: "The king of the jungle" },
-    { label: "Tiger", value: "tiger", description: "The largest cat species" },
-    {
-        label: "Giraffe",
-        value: "giraffe",
-        description: "The tallest land animal",
-    },
-    {
-        label: "Dolphin",
-        value: "dolphin",
-        description:
-            "A widely distributed and diverse group of aquatic mammals",
-    },
-    {
-        label: "Penguin",
-        value: "penguin",
-        description: "A group of aquatic flightless birds",
-    },
-    {
-        label: "Zebra",
-        value: "zebra",
-        description: "A several species of African equids",
-    },
-    {
-        label: "Shark",
-        value: "shark",
-        description:
-            "A group of elasmobranch fish characterized by a cartilaginous skeleton",
-    },
-    {
-        label: "Whale",
-        value: "whale",
-        description: "Diverse group of fully aquatic placental marine mammals",
-    },
-    {
-        label: "Otter",
-        value: "otter",
-        description: "A carnivorous mammal in the subfamily Lutrinae",
-    },
-    {
-        label: "Crocodile",
-        value: "crocodile",
-        description: "A large semiaquatic reptile",
-    },
-];
+const TableFilters = ({ columns, assetFilters, onApplyFilters }) => {
+    const [filters, setFilters] = React.useState(assetFilters);
+    const [errors, setErrors] = React.useState([]);
 
-const TableFilters = () => {
+    const handleColumnChange = (index, newValue) => {
+        const newFilters = [...filters];
+        newFilters[index].column = newValue;
+        setFilters(newFilters);
+    };
+
+    const handleValueChange = (index, newValue) => {
+        const newFilters = [...filters];
+        newFilters[index].value = newValue;
+        setFilters(newFilters);
+    };
+
+    const addFilters = () => {
+        setFilters([...filters, { column: "", value: "" }]);
+    };
+    const removeFilter = (index) => {
+        const newFilters = filters.filter((_, i) => i !== index);
+        setFilters(newFilters);
+    };
+
+    const removeAllFilter = () => {
+        setFilters([]);
+    };
+
+    const applyFilters = () => {
+        const newErrors = {};
+        let isValid = true;
+
+        filters.forEach((filter, index) => {
+            newErrors[index] = { column: false, value: false };
+            if (!filter.column) {
+                newErrors[index].column = true;
+                isValid = false;
+            }
+            if (!filter.value) {
+                newErrors[index].value = true;
+                isValid = false;
+            }
+        });
+
+        setErrors(newErrors);
+
+        if (isValid) {
+            setErrors([]);
+            onApplyFilters(filters);
+        }
+    };
+
+    // Force update filters when filter is empty
+    React.useEffect(() => {
+        filters.length <= 0 && onApplyFilters([]);
+    }, [filters]);
+
     return (
         <div>
-            <Popover placement="bottom">
-                <PopoverTrigger>
-                    <Button
-                        startContent={
-                            <FilterIcon width={20} height={20} fill="none" />
-                        }
-                        color="primary"
-                    >
-                        Filter
-                    </Button>
-                </PopoverTrigger>
+            <Popover placement="bottom" triggerType="grid">
+                <Badge
+                    content={assetFilters.length}
+                    size="lg"
+                    color="warning"
+                    placement="top-left"
+                    isInvisible={assetFilters.length <= 0}
+                >
+                    <PopoverTrigger>
+                        <Button
+                            startContent={
+                                <FilterIcon
+                                    width={20}
+                                    height={20}
+                                    fill="none"
+                                />
+                            }
+                            color="primary"
+                        >
+                            Filters
+                        </Button>
+                    </PopoverTrigger>
+                </Badge>
                 <PopoverContent>
-                    <div className="py-2 flex flex-col gap-3 items-center">
-                        <div className="flex gap-3 items-center">
-                            <Autocomplete
-                                key={"column"}
-                                label="Select column to filter"
-                                className="max-w-xs"
-                            >
-                                {animals.map((animal) => (
-                                    <AutocompleteItem
-                                        key={animal.value}
-                                        value={animal.value}
+                    <div className="py-4 px-3 flex flex-col gap-3 items-center ">
+                        {filters.length <= 0 ? (
+                            <div className="flex flex-col gap-3 items-center w-80">
+                                <p>No existing filters yet.</p>
+                                <Button
+                                    startContent={
+                                        <AddIcon
+                                            width={10}
+                                            height={10}
+                                            color={"#fff"}
+                                        />
+                                    }
+                                    size="sm"
+                                    color="primary"
+                                    onClick={() => addFilters()}
+                                >
+                                    Add filter
+                                </Button>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="flex flex-col gap-3 items-center ">
+                                    {filters.map((filter, index) => (
+                                        <div
+                                            key={index}
+                                            className="flex items-start gap-2 "
+                                        >
+                                            <Autocomplete
+                                                key={`column-${index}`}
+                                                id={`column-${index}`}
+                                                name={`column-${index}`}
+                                                aria-labelledby="Column to filter"
+                                                placeholder="Column"
+                                                size="sm"
+                                                defaultItems={columns}
+                                                disabledKeys={["actions"]}
+                                                selectedKey={filter.column}
+                                                menuTrigger="input"
+                                                isInvalid={
+                                                    errors[index]
+                                                        ? errors[index].column
+                                                        : false
+                                                }
+                                                errorMessage={
+                                                    errors[index] &&
+                                                    "You can't leave this field empty."
+                                                }
+                                                onSelectionChange={(key) => {
+                                                    handleColumnChange(
+                                                        index,
+                                                        key
+                                                    );
+                                                }}
+                                            >
+                                                {(item) =>
+                                                    item.uid !== "actions" && (
+                                                        <AutocompleteItem
+                                                            key={item.uid}
+                                                        >
+                                                            {item.name}
+                                                        </AutocompleteItem>
+                                                    )
+                                                }
+                                            </Autocomplete>
+                                            <Input
+                                                id={`filter-value-${index}`}
+                                                name={`filter-value-${index}`}
+                                                placeholder="Value"
+                                                size="sm"
+                                                value={filter.value}
+                                                isInvalid={
+                                                    errors[index]
+                                                        ? errors[index].value
+                                                        : false
+                                                }
+                                                errorMessage={
+                                                    errors[index] &&
+                                                    "You can't leave this field empty."
+                                                }
+                                                onChange={(e) =>
+                                                    handleValueChange(
+                                                        index,
+                                                        e.target.value
+                                                    )
+                                                }
+                                            />
+                                            <Button
+                                                isIconOnly
+                                                color="danger"
+                                                size="sm"
+                                                onClick={() =>
+                                                    removeFilter(index)
+                                                }
+                                                variant="flat"
+                                            >
+                                                <DeleteIcon />
+                                            </Button>
+                                        </div>
+                                    ))}
+                                </div>
+                                <Spacer y={1} />
+                                <div className="flex gap-3 justify-between w-full">
+                                    <div className="flex gap-3">
+                                        <Button
+                                            size="sm"
+                                            color="warning"
+                                            onClick={() => addFilters()}
+                                            variant="flat"
+                                            startContent={
+                                                <AddIcon
+                                                    width={10}
+                                                    height={10}
+                                                    color={"currentColor"}
+                                                />
+                                            }
+                                        >
+                                            Add Filter
+                                        </Button>
+
+                                        <Button
+                                            size="sm"
+                                            color="danger"
+                                            onClick={removeAllFilter}
+                                            variant="flat"
+                                            startContent={
+                                                <EraserIcon
+                                                    width={12}
+                                                    height={12}
+                                                />
+                                            }
+                                        >
+                                            Clear All
+                                        </Button>
+                                    </div>
+                                    <Button
+                                        size="sm"
+                                        color="primary"
+                                        onClick={applyFilters}
+                                        startContent={
+                                            <SaveIcon width={15} height={15} />
+                                        }
                                     >
-                                        {animal.label}
-                                    </AutocompleteItem>
-                                ))}
-                            </Autocomplete>
-                            <Autocomplete
-                                key={"value"}
-                                label="Select column value"
-                                className="max-w-xs"
-                            >
-                                {animals.map((animal) => (
-                                    <AutocompleteItem
-                                        key={animal.value}
-                                        value={animal.value}
-                                    >
-                                        {animal.label}
-                                    </AutocompleteItem>
-                                ))}
-                            </Autocomplete>
-                            <Button isIconOnly color="danger">
-                                <DeleteIcon />
-                            </Button>
-                        </div>
-                        <div className="flex gap-3">
-                            <Button>Add Filter</Button>
-                            <Button>Filter</Button>
-                        </div>
+                                        Apply All
+                                    </Button>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </PopoverContent>
             </Popover>

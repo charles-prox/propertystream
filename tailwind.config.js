@@ -14,7 +14,7 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ["Figtree", ...defaultTheme.fontFamily.sans],
+                sans: ["Be Vietnam", ...defaultTheme.fontFamily.sans],
             },
         },
     },
@@ -24,6 +24,7 @@ export default {
             themes: {
                 light: {
                     colors: {
+                        foreground: "#222831",
                         primary: { DEFAULT: "#14B8A6", foreground: "#FFF" },
                         secondary: { DEFAULT: "#006FEE", foreground: "#000" },
                         danger: { DEFAULT: "#FF3131", foreground: "#FFF" },
@@ -33,7 +34,7 @@ export default {
                 dark: {
                     colors: {
                         background: "#1E293B",
-                        foreground: "#F8FAFC",
+                        foreground: "#E6E6E6",
                         primary: { DEFAULT: "#6366F1", foreground: "#FFF" },
                         secondary: { DEFAULT: "#006FEE", foreground: "#000" },
                         danger: "#FF3131",

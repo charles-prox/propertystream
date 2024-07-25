@@ -1,6 +1,6 @@
 import { Card, CardBody, CardHeader, Image } from "@nextui-org/react";
 import { usePage } from "@inertiajs/react";
-import { asset } from "@/utils";
+import { asset } from "@/utils/helpers";
 
 const appName = import.meta.env.VITE_APP_NAME || "Laravel";
 
@@ -18,12 +18,12 @@ export default function AuthLayout({ children }) {
                         <Image
                             width={100}
                             alt="App logo"
-                            src={asset("charles-logo.png")}
+                            src={asset("PropertyStream.png")}
                         />
                     </div>
                     <h1 className="text-2xl mb-2">
                         Welcome to&nbsp;
-                        <span className="text-primary-500 font-extrabold">
+                        <span className="text-primary font-extrabold">
                             {appName}.
                         </span>
                     </h1>
