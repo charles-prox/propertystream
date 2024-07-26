@@ -22,8 +22,8 @@ return new class extends Migration
             $table->string('iar_no');
             $table->string('useful_time');
             $table->text('remarks');
-            $table->bigInteger('added_by');
-            $table->foreign('added_by')->references('id')->on('users');
+            $table->string('added_by', 8);
+            $table->foreign('added_by')->references('hris_id')->on('users');
             $table->timestamps();
         });
     }

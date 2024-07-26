@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\PropertyDetails;
 use App\Http\Requests\PropertyDetailsRequest;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class PropertyDetailsController extends Controller
 {

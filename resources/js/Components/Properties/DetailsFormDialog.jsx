@@ -16,8 +16,13 @@ import { TVIcon } from "./Icons/TVIcon";
 import { decodeHtmlEntities } from "@/utils/helpers";
 
 const DetailsFormDialog = ({ isOpen, setIsDialogOpen, property }) => {
+    // Access the properties and auth data from the page's props
     const { properties, auth } = usePage().props;
+
+    // State to keep track of the property index
     const [propertyIndex, setPropertyIndex] = useState(-1);
+
+    // useForm hook to manage form data and submission
     const { data, setData, post, processing, errors, reset } = useForm({
         property_id: null,
         iac_no: "",
@@ -30,6 +35,7 @@ const DetailsFormDialog = ({ isOpen, setIsDialogOpen, property }) => {
         remarks: "New",
     });
 
+    // Handle form input changes
     const handleChange = (key, value) => {
         setData((prevState) => ({
             ...prevState,
@@ -37,24 +43,30 @@ const DetailsFormDialog = ({ isOpen, setIsDialogOpen, property }) => {
         }));
     };
 
+    // Handle form submission
     const submit = (e) => {
-        console.log("You just submitted the form.");
-        console.log("data: " + JSON.stringify(data));
         e.preventDefault();
         errors.message = null;
-        post(route("properties.details"));
+        post(route("properties.details"), {
+            onSuccess: () => {
+                reset();
+                setIsDialogOpen(false, property);
+            },
+        });
     };
 
+    // Set form data and property index when the property changes
     React.useEffect(() => {
         if (property) {
             setData((prevState) => ({
                 ...prevState,
-                property_id: property,
+                property_id: property.currentKey,
                 added_by: auth.user.hris_id,
             }));
             setPropertyIndex(
                 properties.rows.findIndex(
-                    (item) => parseInt(item.id) === parseInt(property)
+                    (item) =>
+                        parseInt(item.id) === parseInt(property.currentKey)
                 )
             );
         }

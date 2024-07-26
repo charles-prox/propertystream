@@ -23,6 +23,7 @@ import GenerationDialog from "./GenerationDialog";
 import DetailsFormDialog from "./DetailsFormDialog";
 import { decodeHtmlEntities } from "@/utils/helpers";
 
+// Mapping status labels to color codes for displaying in the table
 const statusColorMap = {
     deployed: "success",
     deployable: "warning",
@@ -33,14 +34,18 @@ const statusColorMap = {
 
 const PropertyDataTable = ({ searchKey, columns, resetSearch }) => {
     const { properties, properties_with_details } = usePage().props;
+
     // Load the table options from session storage on component mount
     const assetsTableOptions = JSON.parse(
         sessionStorage.getItem("assetsTableOptions")
     );
-    // Load the selections from session storage on component mount
+
+    // Load selected property keys from session storage on component mount
     const selectedPropertyKeys = JSON.parse(
         sessionStorage.getItem("selectedPropertyKeys")
     );
+
+    // State management for various aspects of the table and dialogs
     const [loadingState, setLoadingState] = useState("idle");
     const [disabledKeys, setDisabledKeys] = useState([]);
     const [property, setProperty] = useState(-1);
@@ -67,7 +72,7 @@ const PropertyDataTable = ({ searchKey, columns, resetSearch }) => {
 
     const pages = Math.ceil(properties.total / tableOptions.per_page);
 
-    // initialize disabled rows in the table
+    // Initialize disabled rows in the table based on the properties' status
     useEffect(() => {
         const newDisabledKeys = properties.rows
             .filter(
@@ -79,7 +84,7 @@ const PropertyDataTable = ({ searchKey, columns, resetSearch }) => {
         setDisabledKeys(newDisabledKeys);
     }, [properties]);
 
-    // saves the keys of the selected rows in the session storage
+    // Save the keys of the selected rows in the session storage
     useEffect(() => {
         const selectionArray = Array.from(selectedKeys);
 
@@ -123,7 +128,7 @@ const PropertyDataTable = ({ searchKey, columns, resetSearch }) => {
         });
     };
 
-    // This function handles the changes in sorting the table
+    // Handle changes in table sorting
     const handleTableSort = (descriptor) => {
         const direction = descriptor.direction === "ascending" ? "asc" : "desc";
         const column = descriptor.column;
@@ -135,6 +140,7 @@ const PropertyDataTable = ({ searchKey, columns, resetSearch }) => {
         }));
     };
 
+    // Handle row selection
     const handleSelection = (keys) => {
         if (disabledKeys.includes(keys.currentKey)) {
             setIsAlertOpen(true);
@@ -143,7 +149,7 @@ const PropertyDataTable = ({ searchKey, columns, resetSearch }) => {
                 keys.currentKey &&
                 !properties_with_details.includes(keys.currentKey)
             ) {
-                setProperty(keys.currentKey);
+                setProperty(keys);
                 setIsDialogFormOpen(true);
             }
 
@@ -152,6 +158,15 @@ const PropertyDataTable = ({ searchKey, columns, resetSearch }) => {
         }
     };
 
+    // Handle the state of the dialog form
+    const handleDialogFormState = (state, key) => {
+        if (key) {
+            setIsDialogFormOpen(state);
+            setSelectedKeys(key);
+        } else setIsDialogFormOpen(state);
+    };
+
+    // Reset the table search
     const handleResetTable = () => {
         resetSearch();
         setTableOptions((prevState) => ({
@@ -160,7 +175,7 @@ const PropertyDataTable = ({ searchKey, columns, resetSearch }) => {
         }));
     };
 
-    // This function is used to dynamically process and render values in the table
+    // Dynamically process and render values in the table cells
     const renderCell = useCallback((item, columnKey) => {
         const cellValue = item.id;
 
@@ -255,7 +270,7 @@ const PropertyDataTable = ({ searchKey, columns, resetSearch }) => {
         }
     }, []);
 
-    // This is the pagination of the table
+    // Pagination bar component
     const PaginationBar = () => {
         return (
             <div className="flex w-full justify-between">
@@ -308,7 +323,7 @@ const PropertyDataTable = ({ searchKey, columns, resetSearch }) => {
         );
     };
 
-    // This is the header that shows when at least a row is selected
+    // Header that shows when at least a row is selected
     const SelectionActions = () => {
         return (
             <div className="flex items-end justify-between">
@@ -416,7 +431,9 @@ const PropertyDataTable = ({ searchKey, columns, resetSearch }) => {
             {/* This component is a form to add required details to each property before generating the form*/}
             <DetailsFormDialog
                 isOpen={isDialogFormOpen}
-                setIsDialogOpen={(state) => setIsDialogFormOpen(state)}
+                setIsDialogOpen={(state, key) => {
+                    handleDialogFormState(state, key);
+                }}
                 property={property}
             />
         </div>
