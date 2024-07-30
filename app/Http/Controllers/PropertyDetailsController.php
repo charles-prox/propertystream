@@ -6,6 +6,7 @@ use App\Models\PropertyDetails;
 use App\Http\Requests\PropertyDetailsRequest;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Http;
 
 class PropertyDetailsController extends Controller
 {
@@ -14,7 +15,16 @@ class PropertyDetailsController extends Controller
      */
     public function index(Request $request)
     {
-        //
+        // Validate the incoming request
+        $validated = $request->validate([
+            'selected' => 'required|array',
+            'selected.*' => 'exists:property_details,property_id', // Make sure to validate each ID
+        ]);
+
+
+        return Inertia::render('Properties', [
+            'selectedDetails' => Inertia::lazy(fn () => PropertyDetails::whereIn('property_id', $validated['selected'])->get()),
+        ]);
     }
 
     /**

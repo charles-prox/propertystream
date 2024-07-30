@@ -41,17 +41,18 @@ const PropertyDataTable = ({ searchKey, columns, resetSearch }) => {
     );
 
     // Load selected property keys from session storage on component mount
-    const selectedPropertyKeys = JSON.parse(
-        sessionStorage.getItem("selectedPropertyKeys")
+    const selectedProperties = JSON.parse(
+        sessionStorage.getItem("selectedProperties")
     );
 
     // State management for various aspects of the table and dialogs
     const [loadingState, setLoadingState] = useState("idle");
     const [disabledKeys, setDisabledKeys] = useState([]);
-    const [property, setProperty] = useState(-1);
-    const [selectedKeys, setSelectedKeys] = useState(
-        new Set(selectedPropertyKeys || [])
-    );
+    const [currentProperty, setCurrentProperty] = useState(-1);
+    const [selectedKeys, setSelectedKeys] = useState({
+        keys: selectedProperties ? new Set(selectedProperties.keys || []) : [],
+        details: selectedProperties ? selectedProperties.details || [] : [],
+    });
     const [isAlertOpen, setIsAlertOpen] = useState(false);
     const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
     const [isDialogFormOpen, setIsDialogFormOpen] = useState(false);
@@ -86,11 +87,14 @@ const PropertyDataTable = ({ searchKey, columns, resetSearch }) => {
 
     // Save the keys of the selected rows in the session storage
     useEffect(() => {
-        const selectionArray = Array.from(selectedKeys);
+        const selectedProperties = {
+            keys: Array.from(selectedKeys.keys),
+            details: selectedKeys.details,
+        };
 
         sessionStorage.setItem(
-            "selectedPropertyKeys",
-            JSON.stringify(selectionArray)
+            "selectedProperties",
+            JSON.stringify(selectedProperties)
         );
     }, [selectedKeys]);
 
@@ -142,6 +146,8 @@ const PropertyDataTable = ({ searchKey, columns, resetSearch }) => {
 
     // Handle row selection
     const handleSelection = (keys) => {
+        setCurrentProperty(keys);
+
         if (disabledKeys.includes(keys.currentKey)) {
             setIsAlertOpen(true);
         } else {
@@ -149,20 +155,54 @@ const PropertyDataTable = ({ searchKey, columns, resetSearch }) => {
                 keys.currentKey &&
                 !properties_with_details.includes(keys.currentKey)
             ) {
-                setProperty(keys);
                 setIsDialogFormOpen(true);
-            }
+            } else {
+                const keysArray = Array.from(keys);
 
-            properties_with_details.includes(keys.currentKey) &&
-                setSelectedKeys(keys);
+                setSelectedKeys((selectedKeys) => ({
+                    ...selectedKeys,
+                    keys: keys,
+                    details:
+                        keys.currentKey !== undefined
+                            ? [
+                                  ...selectedKeys.details,
+                                  properties.rows.find(
+                                      (row) =>
+                                          row.id === parseInt(keys.currentKey)
+                                  ),
+                              ]
+                            : [
+                                  ...selectedKeys.details.filter((detail) =>
+                                      keysArray.includes(detail.id.toString())
+                                  ),
+                              ],
+                }));
+            }
         }
     };
 
     // Handle the state of the dialog form
     const handleDialogFormState = (state, key) => {
         if (key) {
+            const keysArray = Array.from(key);
             setIsDialogFormOpen(state);
-            setSelectedKeys(key);
+            setSelectedKeys((selectedKeys) => ({
+                ...selectedKeys,
+                keys: key,
+                details:
+                    key.currentKey !== undefined
+                        ? [
+                              ...selectedKeys.details,
+                              properties.rows.find(
+                                  (row) => row.id === parseInt(key.currentKey)
+                              ),
+                          ]
+                        : [
+                              ...selectedKeys.details.filter((detail) =>
+                                  keysArray.includes(detail.id.toString())
+                              ),
+                          ],
+            }));
         } else setIsDialogFormOpen(state);
     };
 
@@ -329,15 +369,15 @@ const PropertyDataTable = ({ searchKey, columns, resetSearch }) => {
             <div className="flex items-end justify-between">
                 <div
                     className={`flex gap-3 items-center ${
-                        selectedKeys.size <= 0 && "invisible"
+                        selectedKeys.keys.size <= 0 && "invisible"
                     } `}
                 >
                     <p className={`text-default-500 text-sm `}>
                         Selected{" "}
                         <span>
-                            {selectedKeys === "all"
+                            {selectedKeys.keys === "all"
                                 ? properties.total
-                                : selectedKeys.size}
+                                : selectedKeys.keys.size}
                         </span>{" "}
                         out of <span> {properties.total}</span> properties
                     </p>
@@ -347,7 +387,13 @@ const PropertyDataTable = ({ searchKey, columns, resetSearch }) => {
                         color="danger"
                         size="sm"
                         // className="text-default-500"
-                        onClick={() => setSelectedKeys(new Set([]))}
+                        onClick={() =>
+                            setSelectedKeys((selectedKeys) => ({
+                                ...selectedKeys,
+                                keys: new Set([]),
+                                details: [],
+                            }))
+                        }
                     >
                         Unselect All
                     </Button>
@@ -359,8 +405,8 @@ const PropertyDataTable = ({ searchKey, columns, resetSearch }) => {
                     startContent={
                         <PdfIcon width={25} height={25} fill={"currentColor"} />
                     }
-                    className={selectedKeys.size <= 0 && "invisible"}
-                    onClick={() => setIsDialogOpen(true)}
+                    className={selectedKeys.keys.size <= 0 && "invisible"}
+                    onClick={() => setIsGenerateDialogOpen(true)}
                 >
                     Generate Form
                 </Button>
@@ -379,7 +425,7 @@ const PropertyDataTable = ({ searchKey, columns, resetSearch }) => {
                 bottomContent={<PaginationBar />}
                 sortDescriptor={sortDescriptor}
                 onSortChange={handleTableSort}
-                selectedKeys={[...selectedKeys]}
+                selectedKeys={[...selectedKeys.keys]}
                 onSelectionChange={handleSelection}
             >
                 <TableHeader columns={columns}>
@@ -427,6 +473,7 @@ const PropertyDataTable = ({ searchKey, columns, resetSearch }) => {
             <GenerationDialog
                 isOpen={isGenerateDialogOpen}
                 setIsDialogOpen={(state) => setIsGenerateDialogOpen(state)}
+                selected={Array.from(selectedKeys.keys)}
             />
             {/* This component is a form to add required details to each property before generating the form*/}
             <DetailsFormDialog
@@ -434,7 +481,7 @@ const PropertyDataTable = ({ searchKey, columns, resetSearch }) => {
                 setIsDialogOpen={(state, key) => {
                     handleDialogFormState(state, key);
                 }}
-                property={property}
+                property={currentProperty}
             />
         </div>
     );

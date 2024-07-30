@@ -31,6 +31,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::resource('users', UsersController::class);
     Route::get('/properties', [PropertyController::class, 'index'])->name('properties');
+    Route::post('/properties/selected', [PropertyDetailsController::class, 'index'])->name('properties.selected');
     Route::post('/properties/details', [PropertyDetailsController::class, 'store'])->name('properties.details');
     Route::get('registration/form/get/offices&roles', [RegisteredUserController::class, 'getOfficesAndRoles'])->name('registration.get.offices&roles');
 });

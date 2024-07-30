@@ -16,8 +16,8 @@ import {
 import { useForm } from "@inertiajs/react";
 import { useTheme } from "@/ThemeProvider";
 import PasswordInput from "@/Components/PasswordInput";
-import { employmentStatus } from "@/utils/helpers";
 import Alert from "../Alert";
+import { employmentStatus } from "@/utils/constants";
 
 export default function RegisterUser() {
     const [offices, setOffices] = useState([]);
