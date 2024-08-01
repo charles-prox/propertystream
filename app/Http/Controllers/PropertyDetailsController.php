@@ -22,11 +22,13 @@ class PropertyDetailsController extends Controller
         ]);
 
 
-        return Inertia::render('Properties', [
-            'selectedDetails' => Inertia::lazy(fn () => PropertyDetails::whereIn('property_id', $validated['selected'])->get()),
-        ]);
-    }
+        // return Inertia::render('Properties', [
+        //     'selectedDetails' => Inertia::lazy(fn () => PropertyDetails::whereIn('property_id', $validated['selected'])->get()),
+        // ]);
+        $propertyDetails = PropertyDetails::whereIn('property_id', $validated['selected'])->get();
 
+        return response()->json($propertyDetails);
+    }
     /**
      * Store a newly created resource in storage.
      */

@@ -33,26 +33,73 @@ class PropertyController extends Controller
         }
 
 
-        $response = Http::withHeaders([
+        $properties = Http::withHeaders([
             'Authorization' => 'Bearer ' . env('API_TOKEN'),
             "Content-Type" => "application/json",
             'Accept' => 'application/json',
         ])->get($url);
 
         $properties_with_details = PropertyDetails::pluck('property_id')->toArray();
-
+        $propertiesJson = $properties->json();
         // Check if the response is successful
-        if ($response->successful()) {
+        if ($properties->successful()) {
+            $users = 'http://172.22.122.90/api/v1/users';
+            // // Loop through each object in the array
+            foreach ($propertiesJson["rows"] as &$property) {
+                if (isset($property['assigned_to']) && is_array($property['assigned_to']) && isset($property['assigned_to']['id'])) {
+                    if ($property['assigned_to']['type'] === 'user') {
+                        $assigned_to_id = $property['assigned_to']['id'];
+                        // dd($assigned_to_id);
+                        $userResponse = Http::withHeaders([
+                            'Authorization' => 'Bearer ' . env('API_TOKEN'),
+                            "Content-Type" => "application/json",
+                            'Accept' => 'application/json',
+                        ])->get($users . '/' . $assigned_to_id);
+                        // Check if the request was successful
+                        if ($userResponse->successful()) {
+                            $userJson = $userResponse->json();
+                            // Add the job title to the property
+                            if (array_key_exists('jobtitle', $userJson)) {
+                                $property['assigned_to']['jobtitle'] = $userJson['jobtitle'];
+                            }
+                        } else {
+                            // Handle error, if necessary
+                            return response()->json(['error' => 'Error fetching user: ' . $userResponse->body()], $properties->status());
+                        }
+                    }
+
+                    if ($property['assigned_to']['type'] === 'location') {
+                        $assigned_to_id = $property['assigned_to']['id'];
+                        $userResponse = Http::withHeaders([
+                            'Authorization' => 'Bearer ' . env('API_TOKEN'),
+                            "Content-Type" => "application/json",
+                            'Accept' => 'application/json',
+                        ])->get($users . '?location_id=' . $assigned_to_id);
+                        // Check if the request was successful
+                        if ($userResponse->successful()) {
+                            $userJson = $userResponse->json();
+                            // Add the job title to the property
+                            if (array_key_exists('jobtitle', $userJson['rows'][0])) {
+                                $property['assigned_to']['jobtitle'] = $userJson['rows'][0]['jobtitle'];
+                                $property['assigned_to']['user_name'] = $userJson['rows'][0]['name'];
+                            }
+                        } else {
+                            // Handle error, if necessary
+                            return response()->json(['error' => 'Error fetching user: ' . $userResponse->body()], $properties->status());
+                        }
+                    }
+                }
+            }
 
             return Inertia::render('Properties', [
-                'properties' => $response->json(),
+                'properties' => $propertiesJson,
                 'properties_with_details' => $properties_with_details,
                 'url' => $url
             ]);
         }
 
         // Handle errors
-        return response()->json(['error' => 'Unable to fetch data'], $response->status());
+        return response()->json(['error' => 'Unable to fetch data'], $properties->status());
     }
 
     /**

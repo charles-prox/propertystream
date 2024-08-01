@@ -113,7 +113,10 @@ const PropertyDataTable = ({ searchKey, columns, resetSearch }) => {
             setTableOptions((prevState) => ({
                 ...prevState,
                 search_key: searchKey,
+                current_page: 1,
             }));
+        } else {
+            handleResetTable();
         }
     }, [searchKey]);
 
@@ -473,7 +476,10 @@ const PropertyDataTable = ({ searchKey, columns, resetSearch }) => {
             <GenerationDialog
                 isOpen={isGenerateDialogOpen}
                 setIsDialogOpen={(state) => setIsGenerateDialogOpen(state)}
-                selected={Array.from(selectedKeys.keys)}
+                selected={{
+                    keys: Array.from(selectedKeys.keys),
+                    details: selectedKeys.details,
+                }}
             />
             {/* This component is a form to add required details to each property before generating the form*/}
             <DetailsFormDialog

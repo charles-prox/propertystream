@@ -8,149 +8,262 @@ import {
     Image,
     Font,
 } from "@react-pdf/renderer";
+import {
+    decodeHtmlEntities,
+    getCurrentDate,
+    toTitleCase,
+} from "@/utils/helpers";
 
-const PropertyAcknowledgementReceipt = ({ properties }) => {
+const PropertyAcknowledgementReceipt = ({ formData }) => {
     return (
         <Document title="PAR-1881-0224">
-            <Page size="A4" style={styles.page}>
-                <View style={styles.page_border}>
-                    <View fixed style={styles.header}>
-                        <View>
-                            <Image
-                                style={styles.logo}
-                                src="/PhilHealth_Logo.png"
-                            />
-                        </View>
-                        <View style={styles.header_title}>
-                            <Text style={styles.form_title}>
-                                Property Acknowledgement Receipt
-                            </Text>
-                            <Text style={styles.corp_name}>
-                                Philippine Health Insurance Corporation
-                            </Text>
-                            <Text style={styles.corp_name}>
-                                PhilHealth Regional Office 10
-                            </Text>
-                            <Text style={styles.par_no}>PAR No. 1881-0224</Text>
-                        </View>
-                    </View>
-                    <View style={styles.table_head}>
-                        <Text style={[styles.table_col, styles.qty_col]}>
-                            QTY.
-                        </Text>
-                        <Text style={[styles.table_col, styles.unit_col]}>
-                            UNIT
-                        </Text>
-                        <Text style={[styles.table_col, styles.des_col]}>
-                            Description
-                        </Text>
-                        <Text style={[styles.table_col, styles.prop_col]}>
-                            Property Number
-                        </Text>
-                    </View>
-                    <View style={styles.details}>
-                        <Text style={[styles.table_col, styles.qty_col]}>
-                            {"1"}
-                        </Text>
-                        <Text style={[styles.table_col, styles.unit_col]}>
-                            {"unit"}
-                        </Text>
-                        <View style={[styles.table_col, styles.des_col]}>
-                            <Text style={styles.property_detail}>
-                                {"HP Laser Enterprise M611 dr"}
-                            </Text>
-                            <Text>Serial No. {"CNBRS1G0V3"}</Text>
-                            <Text>XXX nothing follows XXX</Text>
-                            <Text style={styles.spacer}></Text>
-                            <Text>Acquired from:</Text>
-                            <Text style={styles.property_detail}>
-                                {"DATAWORLD COMPUTER CENTER"}
-                            </Text>
-                            <Text style={styles.spacer}></Text>
-                            <Text>PR No.: {"2309PR-899-09-21-2023"}</Text>
-                            <Text>Amount.: Php{"87,990.00"}</Text>
-                            <Text>Delivery Date: {"February 22, 2024"}</Text>
-                        </View>
-                        <View style={[styles.table_col, styles.prop_col]}>
-                            <Text style={styles.property_detail}>
-                                {"15-0224IT1407046"}
-                            </Text>
-                            <Text style={styles.spacer}></Text>
-                            <Text>Issued to:</Text>
-                            <Text style={styles.spacer}></Text>
-                            <Text style={styles.property_detail}>
-                                {"LHIO Iligan"}
-                            </Text>
-                            <Text>
-                                {
-                                    "GF Gonzalez-Gimeno Bldg IV, Macapagal Ave., Iligan City"
-                                }
-                            </Text>
-                        </View>
-                    </View>
-                    <View fixed style={styles.footer}>
-                        <View
-                            style={[
-                                styles.signatories,
-                                { borderRight: "1px solid black" },
-                            ]}
-                        >
-                            <Text style={styles.disclaimers}>
-                                I acknowledge the responsibility as an
-                                accountable officer to take good care of the
-                                property being issued by reason of office and/or
-                                duty.
-                            </Text>
-                            <Text>Received by:</Text>
-                            <View style={styles.signatures}>
-                                <Text style={styles.signatures_name}>
-                                    {"ALEKSander A. ALI"}
+            {formData.map((data, index) => {
+                return (
+                    <Page key={index} size="A4" style={styles.page}>
+                        <View style={styles.page_border}>
+                            <View fixed style={styles.header}>
+                                <View>
+                                    <Image
+                                        style={styles.logo}
+                                        src="/PhilHealth_Logo.png"
+                                    />
+                                </View>
+                                <View style={styles.header_title}>
+                                    <Text style={styles.form_title}>
+                                        Property Acknowledgement Receipt
+                                    </Text>
+                                    <Text style={styles.corp_name}>
+                                        Philippine Health Insurance Corporation
+                                    </Text>
+                                    <Text style={styles.corp_name}>
+                                        PhilHealth Regional Office 10
+                                    </Text>
+                                    <Text style={styles.par_no}>
+                                        PAR No. 1881-0224
+                                    </Text>
+                                </View>
+                            </View>
+                            <View style={styles.table_head}>
+                                <Text
+                                    style={[styles.table_col, styles.qty_col]}
+                                >
+                                    QTY.
                                 </Text>
-                                <Text>Signature Over Printed Name</Text>
-                                <Text style={styles.signatures_detail}>
-                                    {"Fiscal Controller I"}
+                                <Text
+                                    style={[styles.table_col, styles.unit_col]}
+                                >
+                                    UNIT
                                 </Text>
-                                <Text>Position</Text>
-                                <Text style={styles.signatures_detail}>
-                                    {"LHIO Iligan"}
+                                <Text
+                                    style={[styles.table_col, styles.des_col]}
+                                >
+                                    Description
                                 </Text>
-                                <Text>Office</Text>
-                                <Text style={styles.signatures_detail}>
-                                    {"02/12/2024"}
+                                <Text
+                                    style={[styles.table_col, styles.prop_col]}
+                                >
+                                    Property Number
                                 </Text>
-                                <Text>Date</Text>
+                            </View>
+                            <View style={styles.details}>
+                                <Text
+                                    style={[styles.table_col, styles.qty_col]}
+                                >
+                                    {"1"}
+                                </Text>
+                                <Text
+                                    style={[styles.table_col, styles.unit_col]}
+                                >
+                                    {"unit"}
+                                </Text>
+                                <View
+                                    style={[styles.table_col, styles.des_col]}
+                                >
+                                    <Text style={styles.property_detail}>
+                                        {toTitleCase(
+                                            decodeHtmlEntities(data.name)
+                                        )}
+                                    </Text>
+                                    <Text>Serial No. {data.serial}</Text>
+                                    <Text>XXX nothing follows XXX</Text>
+                                    <Text style={styles.spacer}></Text>
+                                    <Text>Acquired from:</Text>
+                                    <Text style={styles.property_detail}>
+                                        {data.supplier.name}
+                                    </Text>
+                                    <Text style={styles.spacer}></Text>
+                                    {data.iac_no && (
+                                        <View style={styles.subDetailsRow}>
+                                            <Text
+                                                style={styles.subDetailsLabel}
+                                            >
+                                                IAC No. :
+                                            </Text>
+                                            <Text>{data.iac_no}</Text>
+                                        </View>
+                                    )}
+                                    {data.pr_no && (
+                                        <View style={styles.subDetailsRow}>
+                                            <Text
+                                                style={styles.subDetailsLabel}
+                                            >
+                                                PR No. :
+                                            </Text>
+                                            <Text>{data.pr_no}</Text>
+                                        </View>
+                                    )}
+                                    {data.si_no && (
+                                        <View style={styles.subDetailsRow}>
+                                            <Text
+                                                style={styles.subDetailsLabel}
+                                            >
+                                                SI No. :
+                                            </Text>
+                                            <Text>{data.si_no}</Text>
+                                        </View>
+                                    )}
+                                    {data.dr_no && (
+                                        <View style={styles.subDetailsRow}>
+                                            <Text
+                                                style={styles.subDetailsLabel}
+                                            >
+                                                DR No. :
+                                            </Text>
+                                            <Text>{data.dr_no}</Text>
+                                        </View>
+                                    )}
+                                    {data.po_no && (
+                                        <View style={styles.subDetailsRow}>
+                                            <Text
+                                                style={styles.subDetailsLabel}
+                                            >
+                                                PO No. :
+                                            </Text>
+                                            <Text>{data.po_no}</Text>
+                                        </View>
+                                    )}
+                                    {data.iar_no && (
+                                        <View style={styles.subDetailsRow}>
+                                            <Text
+                                                style={styles.subDetailsLabel}
+                                            >
+                                                IAR No. :
+                                            </Text>
+                                            <Text>{data.iar_no}</Text>
+                                        </View>
+                                    )}
+                                    {data.purchase_cost && (
+                                        <View style={styles.subDetailsRow}>
+                                            <Text
+                                                style={styles.subDetailsLabel}
+                                            >
+                                                Amount :
+                                            </Text>
+                                            <Text>Php{data.purchase_cost}</Text>
+                                        </View>
+                                    )}
+                                    {data.purchase_date && (
+                                        <Text>
+                                            Delivery Date :{" "}
+                                            {data.purchase_date.date}
+                                        </Text>
+                                    )}
+                                    {/* <Text>Delivery Date: {data.delivery_date.date}</Text> */}
+                                </View>
+                                <View
+                                    style={[styles.table_col, styles.prop_col]}
+                                >
+                                    <Text style={styles.property_detail}>
+                                        {data.asset_tag}
+                                    </Text>
+                                    <Text style={styles.spacer}></Text>
+                                    <Text>Issued to:</Text>
+                                    <Text style={styles.spacer}></Text>
+                                    <Text style={styles.property_detail}>
+                                        {data.assigned_to.name}
+                                    </Text>
+                                    {data.location &&
+                                        data.location.name !==
+                                            data.assigned_to.name && (
+                                            <Text>{data.location.name}</Text>
+                                        )}
+                                </View>
+                            </View>
+                            <View fixed style={styles.footer}>
+                                <View
+                                    style={[
+                                        styles.signatories,
+                                        { borderRight: "1px solid black" },
+                                    ]}
+                                >
+                                    <Text style={styles.disclaimers}>
+                                        I acknowledge the responsibility as an
+                                        accountable officer to take good care of
+                                        the property being issued by reason of
+                                        office and/or duty.
+                                    </Text>
+                                    <Text>Received by:</Text>
+                                    <View style={styles.signatures}>
+                                        <Text style={styles.signatures_name}>
+                                            {data.assigned_to.type === "user"
+                                                ? data.assigned_to.name.toUpperCase()
+                                                : data.assigned_to.type ===
+                                                  "location"
+                                                ? data.assigned_to.user_name.toUpperCase()
+                                                : "_________________"}
+                                        </Text>
+                                        <Text>Signature Over Printed Name</Text>
+                                        <Text style={styles.signatures_detail}>
+                                            {data.assigned_to.jobtitle ||
+                                                "__________________"}
+                                        </Text>
+                                        <Text>Position</Text>
+                                        <Text style={styles.signatures_detail}>
+                                            {data.location.name}
+                                        </Text>
+                                        <Text>Office</Text>
+                                        <Text style={styles.signatures_detail}>
+                                            {getCurrentDate()}
+                                        </Text>
+                                        <Text>Date</Text>
+                                    </View>
+                                </View>
+                                <View style={styles.signatories}>
+                                    <Text style={styles.disclaimers}>
+                                        The Property Accountable Officer(PAO)
+                                        will be held liable if during
+                                        inspection, the said item/s could not be
+                                        properly presented / accounted.
+                                    </Text>
+                                    <Text>Received from:</Text>
+                                    <View style={styles.signatures}>
+                                        <Text style={styles.signatures_name}>
+                                            {"GLADYS A. ELTANAL"}
+                                        </Text>
+                                        <Text>Signature Over Printed Name</Text>
+                                        <Text style={styles.signatures_detail}>
+                                            {"Administrative Officer III"}
+                                        </Text>
+                                        <Text>Position</Text>
+                                        <Text style={styles.signatures_detail}>
+                                            {"General Services Unit"}
+                                        </Text>
+                                        <Text>Office</Text>
+                                        <Text style={styles.signatures_detail}>
+                                            {"_____________________"}
+                                        </Text>
+                                        <Text>Date</Text>
+                                    </View>
+                                </View>
                             </View>
                         </View>
-                        <View style={styles.signatories}>
-                            <Text style={styles.disclaimers}>
-                                The Property Accountable Officer(PAO) will be
-                                held liable if during inspection, the said
-                                item/s could not be properly presented /
-                                accounted.
-                            </Text>
-                            <Text>Received from:</Text>
-                            <View style={styles.signatures}>
-                                <Text style={styles.signatures_name}>
-                                    {"GLADYS A. ELTANAL"}
-                                </Text>
-                                <Text>Signature Over Printed Name</Text>
-                                <Text style={styles.signatures_detail}>
-                                    {"Administrative Officer III"}
-                                </Text>
-                                <Text>Position</Text>
-                                <Text style={styles.signatures_detail}>
-                                    {"General Services Unit"}
-                                </Text>
-                                <Text>Office</Text>
-                                <Text style={styles.signatures_detail}>
-                                    {"02/12/2024"}
-                                </Text>
-                                <Text>Date</Text>
-                            </View>
-                        </View>
-                    </View>
-                </View>
-            </Page>
+                        <Text style={styles.footnote}>
+                            "Take good care of government property with
+                            diligence of a good father of a family"
+                        </Text>
+                    </Page>
+                );
+            })}
         </Document>
     );
 };
@@ -163,6 +276,10 @@ Font.register({
 Font.register({
     family: "Georgia Regular",
     src: "/fonts/Georgia.ttf",
+});
+Font.register({
+    family: "Georgia Italic",
+    src: "/fonts/georgiai.ttf",
 });
 
 // Create styles
@@ -251,10 +368,22 @@ const styles = StyleSheet.create({
     property_detail: {
         fontFamily: "Georgia Bold",
     },
+    subDetailsRow: {
+        display: "flex",
+        flexDirection: "row",
+    },
+    subDetailsLabel: {
+        width: 60,
+    },
     footer: {
         display: "flex",
         flexDirection: "row",
         fontSize: 10,
+    },
+    footnote: {
+        fontFamily: "Georgia Italic",
+        fontSize: 8,
+        textAlign: "center",
     },
     signatories: {
         flexGrow: 1,

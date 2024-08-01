@@ -1,5 +1,4 @@
-import React from "react";
-import { router, usePage } from "@inertiajs/react";
+import React, { useRef } from "react";
 import {
     Modal,
     ModalContent,
@@ -10,60 +9,71 @@ import {
     Progress,
     Divider,
 } from "@nextui-org/react";
-import { PDFDownloadLink } from "@react-pdf/renderer";
+import { PDFDownloadLink, BlobProvider } from "@react-pdf/renderer";
 import { CloseIcon } from "@/Icons/AlertIcons/CloseIcon";
 import { PdfIcon } from "./Icons/PdfIcon";
 import { SaveIcon } from "./Icons/SaveIcon";
 import { PrintIcon } from "./Icons/PrintIcon";
 import { ViewIcon } from "./Icons/ViewIcon";
 import PropertyAcknowledgementReceipt from "@/Forms/PropertyAcknowledgementReceipt";
+import { decodeHtmlEntities, toTitleCase } from "@/utils/helpers";
 
 const GenerationDialog = ({ isOpen, setIsDialogOpen, selected }) => {
-    const { properties } = usePage().props;
-    const [value, setValue] = React.useState(0);
-    const [loadingPdf, setLoadingPdf] = React.useState(false);
+    const [loadingData, setLoadingData] = React.useState(false);
+    const [formData, setFormData] = React.useState([]);
+    const iframeRef = useRef(null);
+
+    const printPDF = (url) => {
+        const iframe = iframeRef.current;
+        if (iframe) {
+            iframe.src = url;
+            iframe.onload = () => {
+                iframe.contentWindow.print();
+            };
+        }
+    };
+
+    const handleFetchingData = () => {
+        fetch(route("properties.selected"), {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+                "X-CSRF-TOKEN": document
+                    .querySelector('meta[name="csrf-token"]')
+                    .getAttribute("content"),
+            },
+            body: JSON.stringify({ selected: selected.keys }),
+        }).then(async (response) => {
+            const result = await response.json();
+            const combinedData = result
+                .filter((item) => selected.keys.includes(item.property_id))
+                .map((item) => {
+                    const matchingItem = selected.details.find(
+                        (secondItem) =>
+                            secondItem.id === parseInt(item.property_id)
+                    );
+                    return { ...item, ...matchingItem };
+                });
+            // console.log(
+            //     "combinedData: " + JSON.stringify(combinedData)
+            // );
+            setFormData(combinedData);
+        });
+    };
 
     React.useEffect(() => {
         if (isOpen) {
-            setLoadingPdf(true);
-            router.post(route("properties.selected"), {
-                preserveState: true, // Ensure state is preserved
-                onSuccess: (page) => {
-                    console.log(
-                        "page.props.selectedDetails: " +
-                            JSON.stringify(page.props.selectedDetails)
-                    );
-                    console.log(
-                        "page.props.response: " +
-                            JSON.stringify(page.props.response)
-                    );
-                },
-                onError: (errors) => {
-                    // Handle errors if needed
-                    console.error("Error fetching property details:", errors);
-                },
-                onFinish: () => {
-                    setLoadingPdf(false);
-                },
-                only: ["selectedDetails"],
-            });
+            handleFetchingData();
         }
     }, [isOpen]);
-
-    React.useEffect(() => {
-        const interval = setInterval(() => {
-            setValue((v) => (v >= 100 ? 0 : v + 10));
-        }, 500);
-
-        return () => clearInterval(interval);
-    }, []);
 
     return (
         <>
             <Modal
                 isOpen={isOpen}
                 placement={"top"}
-                size="xl"
+                size="2xl"
                 closeButton={
                     <Button
                         variant="flat"
@@ -86,158 +96,291 @@ const GenerationDialog = ({ isOpen, setIsDialogOpen, selected }) => {
                         </ModalHeader>
                         <ModalBody>
                             <div className="flex flex-col gap-3">
-                                <div className="flex items-center gap-3">
-                                    <PdfIcon width={28} height={28} />
-                                    <p className="max-w-48 truncate grow">
-                                        Xitrix pc 1
-                                    </p>
-                                    {loadingPdf ? (
-                                        <Progress
-                                            label="Generating form..."
-                                            aria-label="Generating form..."
-                                            size="sm"
-                                            value={value}
-                                            color="success"
-                                            showValueLabel={true}
-                                            className="max-w-64"
-                                        />
-                                    ) : (
-                                        <div className="flex gap-3 items-center">
-                                            <Button
-                                                size="sm"
-                                                variant="light"
-                                                color="default"
-                                                startContent={
-                                                    <PrintIcon
-                                                        width={18}
-                                                        height={18}
-                                                    />
-                                                }
-                                            >
-                                                Print
-                                            </Button>
-                                            <Divider
-                                                orientation="vertical"
-                                                className="h-5"
-                                            />
-                                            <PDFDownloadLink
-                                                document={
-                                                    <PropertyAcknowledgementReceipt
-                                                        properties={properties}
-                                                    />
-                                                }
-                                                fileName="PAR.pdf"
-                                            >
-                                                {({
-                                                    blob,
-                                                    url,
-                                                    loading,
-                                                    error,
-                                                }) => {
-                                                    // setLoadingPdf(loading);
-                                                    return (
-                                                        <Button
-                                                            size="sm"
-                                                            variant="light"
-                                                            color="default"
-                                                            isLoading={loading}
-                                                            startContent={
-                                                                <SaveIcon
-                                                                    width={18}
-                                                                    height={18}
-                                                                />
-                                                            }
-                                                        >
-                                                            Save
-                                                        </Button>
-                                                    );
-                                                }}
-                                            </PDFDownloadLink>
+                                {formData.map((data, index) => (
+                                    <div
+                                        key={`form-${index}`}
+                                        className="flex items-center gap-3"
+                                    >
+                                        <PdfIcon width={28} height={28} />
+                                        <div className="flex flex-col gap-1">
+                                            <p className="max-w-56 truncate grow">
+                                                {toTitleCase(
+                                                    decodeHtmlEntities(
+                                                        data.name
+                                                    )
+                                                )}
+                                            </p>
+                                            <p className="text-sm text-default-500 max-w-56 truncate">
+                                                {data.serial}
+                                            </p>
                                         </div>
-                                    )}
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <PdfIcon width={28} height={28} />
-                                    <p className="max-w-48 truncate grow">
-                                        Xitrix pc 1
-                                    </p>
-                                    <div className="flex gap-3 items-center">
-                                        <Button
-                                            size="sm"
-                                            variant="light"
-                                            color="default"
-                                            startContent={
-                                                <ViewIcon
-                                                    width={18}
-                                                    height={18}
+                                        {loadingData ? (
+                                            <Progress
+                                                label="Preparing form..."
+                                                aria-label="Preparing form..."
+                                                size="sm"
+                                                isIndeterminate
+                                                color="success"
+                                                className="max-w-64"
+                                            />
+                                        ) : (
+                                            <div className="flex gap-3 items-center">
+                                                <BlobProvider
+                                                    document={
+                                                        <PropertyAcknowledgementReceipt
+                                                            formData={[data]}
+                                                        />
+                                                    }
+                                                >
+                                                    {({
+                                                        blob,
+                                                        url,
+                                                        loading,
+                                                        error,
+                                                    }) => {
+                                                        // Do whatever you need with blob here
+                                                        return (
+                                                            <Button
+                                                                size="sm"
+                                                                variant="light"
+                                                                color="default"
+                                                                isLoading={
+                                                                    loading
+                                                                }
+                                                                startContent={
+                                                                    !loading && (
+                                                                        <ViewIcon
+                                                                            width={
+                                                                                18
+                                                                            }
+                                                                            height={
+                                                                                18
+                                                                            }
+                                                                        />
+                                                                    )
+                                                                }
+                                                                onPress={() =>
+                                                                    window.open(
+                                                                        url
+                                                                    )
+                                                                }
+                                                            >
+                                                                View
+                                                            </Button>
+                                                        );
+                                                    }}
+                                                </BlobProvider>
+
+                                                <Divider
+                                                    orientation="vertical"
+                                                    className="h-5"
                                                 />
-                                            }
-                                        >
-                                            View
-                                        </Button>
-                                        <Divider
-                                            orientation="vertical"
-                                            className="h-5"
+                                                <BlobProvider
+                                                    document={
+                                                        <PropertyAcknowledgementReceipt
+                                                            formData={[data]}
+                                                        />
+                                                    }
+                                                >
+                                                    {({
+                                                        blob,
+                                                        url,
+                                                        loading,
+                                                        error,
+                                                    }) => {
+                                                        // Do whatever you need with blob here
+                                                        return (
+                                                            <Button
+                                                                size="sm"
+                                                                variant="light"
+                                                                color="default"
+                                                                isLoading={
+                                                                    loading
+                                                                }
+                                                                startContent={
+                                                                    !loading && (
+                                                                        <PrintIcon
+                                                                            width={
+                                                                                18
+                                                                            }
+                                                                            height={
+                                                                                18
+                                                                            }
+                                                                        />
+                                                                    )
+                                                                }
+                                                                onPress={() =>
+                                                                    printPDF(
+                                                                        url
+                                                                    )
+                                                                }
+                                                            >
+                                                                Print
+                                                            </Button>
+                                                        );
+                                                    }}
+                                                </BlobProvider>
+
+                                                <Divider
+                                                    orientation="vertical"
+                                                    className="h-5"
+                                                />
+                                                <PDFDownloadLink
+                                                    document={
+                                                        <PropertyAcknowledgementReceipt
+                                                            formData={[data]}
+                                                        />
+                                                    }
+                                                    fileName="PAR.pdf"
+                                                >
+                                                    {({
+                                                        blob,
+                                                        url,
+                                                        loading,
+                                                        error,
+                                                    }) => {
+                                                        return (
+                                                            <Button
+                                                                size="sm"
+                                                                variant="light"
+                                                                color="default"
+                                                                isLoading={
+                                                                    loading
+                                                                }
+                                                                startContent={
+                                                                    !loading && (
+                                                                        <SaveIcon
+                                                                            width={
+                                                                                18
+                                                                            }
+                                                                            height={
+                                                                                18
+                                                                            }
+                                                                        />
+                                                                    )
+                                                                }
+                                                            >
+                                                                Save
+                                                            </Button>
+                                                        );
+                                                    }}
+                                                </PDFDownloadLink>
+                                            </div>
+                                        )}
+                                        <iframe
+                                            ref={iframeRef}
+                                            style={{ display: "none" }}
+                                            title="PDF Print"
                                         />
-                                        <Button
-                                            size="sm"
-                                            variant="light"
-                                            color="default"
-                                            startContent={
-                                                <PrintIcon
-                                                    width={18}
-                                                    height={18}
-                                                />
-                                            }
-                                        >
-                                            Print
-                                        </Button>
-                                        <Divider
-                                            orientation="vertical"
-                                            className="h-5"
-                                        />
-                                        <Button
-                                            size="sm"
-                                            variant="light"
-                                            color="default"
-                                            startContent={
-                                                <SaveIcon
-                                                    width={18}
-                                                    height={18}
-                                                />
-                                            }
-                                        >
-                                            Save
-                                        </Button>
                                     </div>
-                                </div>
+                                ))}
                             </div>
                         </ModalBody>
                         <ModalFooter>
                             <div className="flex gap-2 w-full justify-between py-4">
-                                <Button color="default" variant="flat">
+                                <Button
+                                    color="default"
+                                    variant="flat"
+                                    onPress={() => setIsDialogOpen(false)}
+                                >
                                     Close
                                 </Button>
                                 <div className="flex gap-2">
-                                    <Button
-                                        color="secondary"
-                                        variant="flat"
-                                        startContent={
-                                            <PrintIcon width={20} height={20} />
+                                    <BlobProvider
+                                        document={
+                                            <PropertyAcknowledgementReceipt
+                                                formData={formData}
+                                            />
                                         }
                                     >
-                                        Print All
-                                    </Button>
+                                        {({ blob, url, loading, error }) => {
+                                            // Do whatever you need with blob here
+                                            return (
+                                                <Button
+                                                    color="primary"
+                                                    variant="flat"
+                                                    isLoading={loading}
+                                                    startContent={
+                                                        !loading && (
+                                                            <ViewIcon
+                                                                width={20}
+                                                                height={20}
+                                                                fill="currentColor"
+                                                            />
+                                                        )
+                                                    }
+                                                    onPress={() =>
+                                                        window.open(url)
+                                                    }
+                                                >
+                                                    View All
+                                                </Button>
+                                            );
+                                        }}
+                                    </BlobProvider>
 
-                                    <Button
-                                        color="secondary"
-                                        variant="flat"
-                                        startContent={
-                                            <SaveIcon width={20} height={20} />
+                                    <BlobProvider
+                                        document={
+                                            <PropertyAcknowledgementReceipt
+                                                formData={formData}
+                                            />
                                         }
                                     >
-                                        Save All
-                                    </Button>
+                                        {({ blob, url, loading, error }) => {
+                                            // Do whatever you need with blob here
+                                            return (
+                                                <Button
+                                                    variant="flat"
+                                                    color="primary"
+                                                    isLoading={loading}
+                                                    startContent={
+                                                        !loading && (
+                                                            <PrintIcon
+                                                                width={20}
+                                                                height={20}
+                                                                fill="currentColor"
+                                                            />
+                                                        )
+                                                    }
+                                                    onPress={() =>
+                                                        printPDF(url)
+                                                    }
+                                                >
+                                                    Print
+                                                </Button>
+                                            );
+                                        }}
+                                    </BlobProvider>
+
+                                    <PDFDownloadLink
+                                        document={
+                                            <PropertyAcknowledgementReceipt
+                                                formData={formData}
+                                            />
+                                        }
+                                        fileName="PAR.pdf"
+                                    >
+                                        {({ blob, url, loading, error }) => {
+                                            return (
+                                                <Button
+                                                    variant="flat"
+                                                    color="primary"
+                                                    isLoading={loading}
+                                                    startContent={
+                                                        !loading && (
+                                                            <SaveIcon
+                                                                width={20}
+                                                                height={20}
+                                                                fill="currentColor"
+                                                            />
+                                                        )
+                                                    }
+                                                >
+                                                    Save All
+                                                </Button>
+                                            );
+                                        }}
+                                    </PDFDownloadLink>
                                 </div>
                             </div>
                         </ModalFooter>
