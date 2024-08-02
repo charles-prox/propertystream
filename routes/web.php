@@ -6,7 +6,13 @@ use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\PropertyDetailsController;
 use App\Http\Controllers\UsersController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Cookie;
 use Inertia\Inertia;
+
+
+Route::get('/api/get-csrf-token', function () {
+    return response()->json(['csrfToken' => Cookie::get('XSRF-TOKEN')]);
+});
 
 Route::get('/', function () {
     return Inertia::render('Home');

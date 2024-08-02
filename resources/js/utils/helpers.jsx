@@ -15,10 +15,48 @@
  */
 
 /**
- * You can place your imports here
+ * Import statements for external libraries and modules.
+ * -------------------------------------------------------------------------------------------------------------------
+ * This section is reserved for importing third-party libraries, frameworks, and other
+ * modules required by the helper functions or the code in this file.
+ *
+ * Imports may include:
+ * - External libraries (e.g., `axios`, `he`)
+ * - Internal modules or components from other parts of the project
+ *
+ * Organize imports logically and group them by type (e.g., third-party libraries, internal modules).
  * -------------------------------------------------------------------------------------------------------------------
  */
 import he from "he";
+import axios from "axios";
+
+/**
+ * Functions and helper methods used across the application.
+ * -------------------------------------------------------------------------------------------------------------------
+ * This section is designated for utility functions and helper methods that provide
+ * commonly needed functionality or transformations throughout the project. These functions
+ * are designed to be reusable and should avoid coupling with specific components or modules.
+ *
+ * Each function should be:
+ * - **Generic**: Applicable to various parts of the application.
+ * - **Reusable**: Avoid duplicating logic by centralizing commonly used code.
+ * - **Well-Documented**: Include comments and documentation for clarity and maintainability.
+ * -------------------------------------------------------------------------------------------------------------------
+ */
+
+/**
+ * Creates an axios instance with default configurations for making HTTP requests.
+ *
+ * This instance is configured to include credentials (e.g., cookies) with requests
+ * and has a default base URL for all requests made using this instance.
+ *
+ * @type {axios.AxiosInstance} - Configured instance of axios.
+ */
+// Create an axios instance with default configurations
+export const axiosInstance = axios.create({
+    baseURL: "/", // Update if you have a different base URL
+    withCredentials: true, // Ensure cookies are sent with requests
+});
 
 /**
  * Generates a URL for displaying images stored in the storage folder that is linked to the public directory.

@@ -54,7 +54,7 @@ const AppNavbar = () => {
     const { post } = useForm();
     const { theme, toggleTheme } = useTheme();
 
-    const submit = (e) => {
+    const logout = (e) => {
         e.preventDefault();
         post(route("logout"), { replace: true });
     };
@@ -125,7 +125,7 @@ const AppNavbar = () => {
                                 </DropdownItem>
                                 <DropdownItem
                                     key="logout"
-                                    onClick={(e) => submit(e)}
+                                    onClick={(e) => logout(e)}
                                     startContent={<LogoutIcon />}
                                 >
                                     Log out

@@ -16,7 +16,11 @@ import { SaveIcon } from "./Icons/SaveIcon";
 import { PrintIcon } from "./Icons/PrintIcon";
 import { ViewIcon } from "./Icons/ViewIcon";
 import PropertyAcknowledgementReceipt from "@/Forms/PropertyAcknowledgementReceipt";
-import { decodeHtmlEntities, toTitleCase } from "@/utils/helpers";
+import {
+    decodeHtmlEntities,
+    axiosInstance,
+    toTitleCase,
+} from "@/utils/helpers";
 
 const GenerationDialog = ({ isOpen, setIsDialogOpen, selected }) => {
     const [loadingData, setLoadingData] = React.useState(false);
@@ -33,20 +37,18 @@ const GenerationDialog = ({ isOpen, setIsDialogOpen, selected }) => {
         }
     };
 
-    const handleFetchingData = () => {
-        fetch(route("properties.selected"), {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Accept: "application/json",
-                "X-CSRF-TOKEN": document
-                    .querySelector('meta[name="csrf-token"]')
-                    .getAttribute("content"),
-            },
-            body: JSON.stringify({ selected: selected.keys }),
-        }).then(async (response) => {
-            const result = await response.json();
-            const combinedData = result
+    const handleFetchingData = async () => {
+        try {
+            // Making a POST request with Axios
+            const response = await axiosInstance.post(
+                route("properties.selected"),
+                {
+                    selected: selected.keys,
+                }
+            );
+
+            // Combine and process the data
+            const combinedData = response.data
                 .filter((item) => selected.keys.includes(item.property_id))
                 .map((item) => {
                     const matchingItem = selected.details.find(
@@ -55,15 +57,18 @@ const GenerationDialog = ({ isOpen, setIsDialogOpen, selected }) => {
                     );
                     return { ...item, ...matchingItem };
                 });
-            // console.log(
-            //     "combinedData: " + JSON.stringify(combinedData)
-            // );
+
+            // Update state with the combined data
+            setLoadingData(false);
             setFormData(combinedData);
-        });
+        } catch (error) {
+            console.error("Error making request:", error);
+        }
     };
 
     React.useEffect(() => {
         if (isOpen) {
+            setLoadingData(true);
             handleFetchingData();
         }
     }, [isOpen]);
@@ -114,50 +119,50 @@ const GenerationDialog = ({ isOpen, setIsDialogOpen, selected }) => {
                                                 {data.serial}
                                             </p>
                                         </div>
-                                        {loadingData ? (
-                                            <Progress
-                                                label="Preparing form..."
-                                                aria-label="Preparing form..."
-                                                size="sm"
-                                                isIndeterminate
-                                                color="success"
-                                                className="max-w-64"
-                                            />
-                                        ) : (
-                                            <div className="flex gap-3 items-center">
-                                                <BlobProvider
-                                                    document={
-                                                        <PropertyAcknowledgementReceipt
-                                                            formData={[data]}
+                                        <BlobProvider
+                                            document={
+                                                <PropertyAcknowledgementReceipt
+                                                    formData={[data]}
+                                                />
+                                            }
+                                        >
+                                            {({
+                                                blob,
+                                                url,
+                                                loading,
+                                                error,
+                                            }) => {
+                                                if (loadingData || loading) {
+                                                    return (
+                                                        <Progress
+                                                            label={
+                                                                loadingData
+                                                                    ? "Preparing data..."
+                                                                    : "Generating form..."
+                                                            }
+                                                            aria-label="Preparing form..."
+                                                            size="sm"
+                                                            isIndeterminate
+                                                            color="success"
+                                                            className="max-w-80"
                                                         />
-                                                    }
-                                                >
-                                                    {({
-                                                        blob,
-                                                        url,
-                                                        loading,
-                                                        error,
-                                                    }) => {
-                                                        // Do whatever you need with blob here
-                                                        return (
+                                                    );
+                                                } else {
+                                                    return (
+                                                        <div className="flex gap-3 items-center">
                                                             <Button
                                                                 size="sm"
                                                                 variant="light"
                                                                 color="default"
-                                                                isLoading={
-                                                                    loading
-                                                                }
                                                                 startContent={
-                                                                    !loading && (
-                                                                        <ViewIcon
-                                                                            width={
-                                                                                18
-                                                                            }
-                                                                            height={
-                                                                                18
-                                                                            }
-                                                                        />
-                                                                    )
+                                                                    <ViewIcon
+                                                                        width={
+                                                                            18
+                                                                        }
+                                                                        height={
+                                                                            18
+                                                                        }
+                                                                    />
                                                                 }
                                                                 onPress={() =>
                                                                     window.open(
@@ -167,47 +172,25 @@ const GenerationDialog = ({ isOpen, setIsDialogOpen, selected }) => {
                                                             >
                                                                 View
                                                             </Button>
-                                                        );
-                                                    }}
-                                                </BlobProvider>
 
-                                                <Divider
-                                                    orientation="vertical"
-                                                    className="h-5"
-                                                />
-                                                <BlobProvider
-                                                    document={
-                                                        <PropertyAcknowledgementReceipt
-                                                            formData={[data]}
-                                                        />
-                                                    }
-                                                >
-                                                    {({
-                                                        blob,
-                                                        url,
-                                                        loading,
-                                                        error,
-                                                    }) => {
-                                                        // Do whatever you need with blob here
-                                                        return (
+                                                            <Divider
+                                                                orientation="vertical"
+                                                                className="h-5"
+                                                            />
+
                                                             <Button
                                                                 size="sm"
                                                                 variant="light"
                                                                 color="default"
-                                                                isLoading={
-                                                                    loading
-                                                                }
                                                                 startContent={
-                                                                    !loading && (
-                                                                        <PrintIcon
-                                                                            width={
-                                                                                18
-                                                                            }
-                                                                            height={
-                                                                                18
-                                                                            }
-                                                                        />
-                                                                    )
+                                                                    <PrintIcon
+                                                                        width={
+                                                                            18
+                                                                        }
+                                                                        height={
+                                                                            18
+                                                                        }
+                                                                    />
                                                                 }
                                                                 onPress={() =>
                                                                     printPDF(
@@ -217,63 +200,53 @@ const GenerationDialog = ({ isOpen, setIsDialogOpen, selected }) => {
                                                             >
                                                                 Print
                                                             </Button>
-                                                        );
-                                                    }}
-                                                </BlobProvider>
 
-                                                <Divider
-                                                    orientation="vertical"
-                                                    className="h-5"
-                                                />
-                                                <PDFDownloadLink
-                                                    document={
-                                                        <PropertyAcknowledgementReceipt
-                                                            formData={[data]}
-                                                        />
-                                                    }
-                                                    fileName="PAR.pdf"
-                                                >
-                                                    {({
-                                                        blob,
-                                                        url,
-                                                        loading,
-                                                        error,
-                                                    }) => {
-                                                        return (
+                                                            <Divider
+                                                                orientation="vertical"
+                                                                className="h-5"
+                                                            />
+
                                                             <Button
                                                                 size="sm"
                                                                 variant="light"
                                                                 color="default"
-                                                                isLoading={
-                                                                    loading
-                                                                }
                                                                 startContent={
-                                                                    !loading && (
-                                                                        <SaveIcon
-                                                                            width={
-                                                                                18
-                                                                            }
-                                                                            height={
-                                                                                18
-                                                                            }
-                                                                        />
-                                                                    )
+                                                                    <SaveIcon
+                                                                        width={
+                                                                            18
+                                                                        }
+                                                                        height={
+                                                                            18
+                                                                        }
+                                                                    />
                                                                 }
+                                                                onPress={() => {
+                                                                    // Create a download link programmatically
+                                                                    const link =
+                                                                        document.createElement(
+                                                                            "a"
+                                                                        );
+                                                                    link.href =
+                                                                        url;
+                                                                    link.download =
+                                                                        "PAR.pdf";
+                                                                    link.click();
+                                                                }}
                                                             >
                                                                 Save
                                                             </Button>
-                                                        );
-                                                    }}
-                                                </PDFDownloadLink>
-                                            </div>
-                                        )}
-                                        <iframe
-                                            ref={iframeRef}
-                                            style={{ display: "none" }}
-                                            title="PDF Print"
-                                        />
+                                                        </div>
+                                                    );
+                                                }
+                                            }}
+                                        </BlobProvider>
                                     </div>
                                 ))}
+                                <iframe
+                                    ref={iframeRef}
+                                    style={{ display: "none" }}
+                                    title="PDF Print"
+                                />
                             </div>
                         </ModalBody>
                         <ModalFooter>
@@ -346,7 +319,7 @@ const GenerationDialog = ({ isOpen, setIsDialogOpen, selected }) => {
                                                         printPDF(url)
                                                     }
                                                 >
-                                                    Print
+                                                    Print All
                                                 </Button>
                                             );
                                         }}
