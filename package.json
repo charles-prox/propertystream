@@ -19,7 +19,9 @@
     "dependencies": {
         "@inertiajs/react": "^1.2.0",
         "@nextui-org/react": "^2.4.6",
+        "@react-pdf/renderer": "^3.4.4",
         "framer-motion": "^11.3.22",
+        "he": "^1.2.0",
         "react-dropzone": "^14.2.3"
     }
 }

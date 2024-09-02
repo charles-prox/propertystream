@@ -2,6 +2,43 @@
 @tailwind components;
 @tailwind utilities;
 
-[x-cloak] {
+@font-face {
+    font-family: "Be Vietnam";
+    src: url("/fonts/Be_Vietnam_Pro/BeVietnamPro-Regular.ttf") format("ttf");
+    font-weight: normal;
+    font-style: normal;
+}
+
+[data-slot="base"] > [data-slot="input-wrapper"] {
+    @apply border-neutral-500;
+}
+
+/* Used to hide select all in Properties data table */
+.property-table [aria-label="Select All"] {
     display: none;
+}
+
+.w-80 {
+    width: 320px;
+}
+
+/* width */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 5px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
 }

@@ -27,6 +27,7 @@
  * Organize imports logically and group them by type (e.g., third-party libraries, internal modules).
  * -------------------------------------------------------------------------------------------------------------------
  */
+import he from "he";
 import axios from "axios";
 
 /**
@@ -115,4 +116,14 @@ export const getCurrentDate = () => {
 
     // Return the formatted date string in MM/DD/YYYY format
     return `${month}/${day}/${year}`;
+};
+
+/**
+ * Decodes HTML entities in a string, ensuring proper conversion of nested or doubly-encoded entities.
+ *
+ * @param {string} str - The string containing HTML entities to be decoded.
+ * @returns {string} - The decoded string with HTML entities converted to their respective characters.
+ */
+export const decodeHtmlEntities = (str) => {
+    return he.decode(he.decode(str));
 };

@@ -81,7 +81,7 @@ export default function ModalAlert({
             className={`${theme}`}
             closeButton={
                 <Button
-                    variant="flat"
+                    variant="light"
                     isIconOnly
                     onPress={() => setIsAlertOpen(false)}
                 >
@@ -118,9 +118,14 @@ export default function ModalAlert({
                             <h3 className="text-lg font-bold text-foreground">
                                 {title || defaults().title}
                             </h3>
-                            <p className="text-default-500 text-sm">
-                                {message || defaults().message}
-                            </p>
+                            {!!message && typeof message === "string" ? (
+                                <p className="text-default-500 text-sm">
+                                    {message}
+                                </p>
+                            ) : (
+                                message
+                            )}
+                            {!message && defaults().message}
                         </div>
                     </div>
                 </ModalBody>

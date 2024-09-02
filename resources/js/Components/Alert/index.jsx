@@ -70,7 +70,11 @@ const Alert = ({ title, type, variant, message, isCloseable = true }) => {
                     <div className="pr-2 pt-1">{startContent(type)}</div>
                     <div className="flex-grow">
                         {title && <p className="text-sm font-bold">{title}</p>}
-                        <p className="text-xs">{message}</p>
+                        {typeof message === "string" ? (
+                            <p className="text-xs">{message}</p>
+                        ) : (
+                            { message }
+                        )}
                     </div>
                     <div
                         className={`${

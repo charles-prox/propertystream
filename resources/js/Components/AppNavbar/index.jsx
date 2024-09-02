@@ -35,7 +35,7 @@ const Logo = () => {
             <Image
                 width={40}
                 alt="App logo"
-                src={asset("logo.png") || "../logo.png"}
+                src={"../logo.png"}
                 loading="lazy"
                 removeWrapper
             />
