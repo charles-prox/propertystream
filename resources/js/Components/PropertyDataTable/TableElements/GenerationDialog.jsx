@@ -15,7 +15,7 @@ import {
     axiosInstance,
     toTitleCase,
 } from "@/utils/helpers";
-import { useTheme } from "@/ThemeProvider";
+import { useTheme } from "@/Contexts/ThemeContext";
 import { CloseIcon } from "@/Components/Alert/icons";
 import { PdfIcon, PrintIcon, SaveIcon, ViewIcon } from "../icons";
 import PropertyAcknowledgementReceipt from "@/Components/Documents/PropertyAcknowledgementReceipt";

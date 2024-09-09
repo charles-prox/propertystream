@@ -20,7 +20,7 @@ import {
     UserWarningIcon,
 } from "../icons";
 import { decodeHtmlEntities } from "@/utils/helpers";
-import { useTheme } from "@/ThemeProvider";
+import { useTheme } from "@/Contexts/ThemeContext";
 
 const statusColorMap = {
     deployed: "success",

@@ -54,6 +54,7 @@ export const ProfileManagementForm = ({
                 setIsAlertOpen(true);
                 setEnableEdit(false);
             },
+            onError: () => {},
             onFinish: () => {},
         });
     };
@@ -179,10 +180,20 @@ export const ProfileManagementForm = ({
                                                               auth?.user
                                                                   .profile_photo_path
                                                           )
-                                                        : auth?.user
-                                                              .profile_photo_url)
+                                                        : false)
                                                 }
-                                                className="min-w-36 min-h-36 text-large bg-transparent"
+                                                showFallback
+                                                fallback={
+                                                    auth?.user.first_name[0] +
+                                                    auth?.user.last_name[0]
+                                                }
+                                                className={`min-w-36 min-h-36 text-[5rem] ${
+                                                    currentPhoto ||
+                                                    auth?.user
+                                                        .profile_photo_path
+                                                        ? "bg-transparent"
+                                                        : `bg-[#EBF4FF] dark:bg-[#7F9CF5]`
+                                                } text-[#7F9CF5] dark:text-[#EBF4FF]`}
                                             />
                                             {enableEdit && (
                                                 <div className="flex flex-col gap-1 items-center">
@@ -224,11 +235,11 @@ export const ProfileManagementForm = ({
                                                                         }
                                                                     )}
                                                                     className={`border-3 border-dashed rounded-md p-5 hover:cursor-pointer ${
-                                                                        errors
+                                                                        (errors
                                                                             .updateProfileInformation
                                                                             ?.photo ||
-                                                                        (dropError &&
-                                                                            "border-red-300")
+                                                                            dropError) &&
+                                                                        "border-red-300"
                                                                     }`}
                                                                 >
                                                                     <input

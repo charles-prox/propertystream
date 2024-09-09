@@ -3,10 +3,10 @@ import React from "react";
 import { usePage } from "@inertiajs/react";
 import AppNavbar from "@/Components/AppNavbar";
 import SideNavbar from "@/Components/SideNavbar";
-import { useTheme } from "@/ThemeProvider";
-import { useSideNavState } from "@/SideNavStateProvider";
 import { Spacer } from "@nextui-org/react";
 import AuthLayout from "./AuthLayout";
+import { useSideNavState } from "@/Contexts/SideNavStateContext";
+import { useTheme } from "@/Contexts/ThemeContext";
 
 const AppLayout = ({ children }) => {
     const minSideNavWidth = 16;

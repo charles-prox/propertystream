@@ -1,8 +1,8 @@
 import React from "react";
 import { Button } from "@nextui-org/react";
 import NavItems from "./NavItems";
-import { useSideNavState } from "@/SideNavStateProvider";
 import { ArrowRightIcon } from "./icons";
+import { useSideNavState } from "@/Contexts/SideNavStateContext";
 
 const SideNavbar = ({ minSideNavWidth, maxSideNavWidth, animationOptions }) => {
     const { sideNavState, toggleSideNavState } = useSideNavState();

@@ -9,7 +9,7 @@ import {
     Input,
     Skeleton,
 } from "@nextui-org/react";
-import { useTheme } from "@/ThemeProvider";
+import { useTheme } from "@/Contexts/ThemeContext";
 import { router, useForm } from "@inertiajs/react";
 import { CloseIcon } from "../Alert/icons";
 

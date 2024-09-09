@@ -10,7 +10,7 @@ import {
     Divider,
 } from "@nextui-org/react";
 import { usePage, useForm } from "@inertiajs/react";
-import { useTheme } from "@/ThemeProvider";
+import { useTheme } from "@/Contexts/ThemeContext";
 import { decodeHtmlEntities } from "@/utils/helpers";
 import { CloseIcon } from "@/Components/Alert/icons";
 import { TVIcon } from "../icons";

@@ -59,7 +59,10 @@ const Profile = () => {
                         setOnSubmit(false);
                     }}
                     onSubmit={onSubmit}
-                    isProcessing={(state) => setLoading(state)}
+                    isProcessing={(state) => {
+                        setLoading(state);
+                        setOnSubmit(false);
+                    }}
                 />
                 <DeleteAccount />
             </div>

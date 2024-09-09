@@ -1,4 +1,5 @@
 import { Autocomplete, AutocompleteItem } from "@nextui-org/autocomplete";
+// @ts-ignore
 import { FilterIcon, AddIcon, DeleteIcon, EraserIcon, SaveIcon } from "./icons";
 import {
     Button,
@@ -10,11 +11,12 @@ import {
     Spacer,
 } from "@nextui-org/react";
 import React from "react";
-import { useTheme } from "@/ThemeProvider";
+import { useTheme } from "@/Contexts/ThemeContext";
 
 const TableFilters = ({ columns, assetFilters, onApplyFilters }) => {
     const [filters, setFilters] = React.useState(assetFilters);
     const [errors, setErrors] = React.useState([]);
+    // @ts-ignore
     const { theme } = useTheme();
 
     const handleColumnChange = (index, newValue) => {
@@ -57,6 +59,7 @@ const TableFilters = ({ columns, assetFilters, onApplyFilters }) => {
             }
         });
 
+        // @ts-ignore
         setErrors(newErrors);
 
         if (isValid) {
@@ -156,11 +159,16 @@ const TableFilters = ({ columns, assetFilters, onApplyFilters }) => {
                                                 color="default"
                                             >
                                                 {(item) =>
+                                                    // @ts-ignore
                                                     item.uid !== "actions" && (
                                                         <AutocompleteItem
+                                                            // @ts-ignore
                                                             key={item.uid}
                                                         >
-                                                            {item.name}
+                                                            {
+                                                                // @ts-ignore
+                                                                item.name
+                                                            }
                                                         </AutocompleteItem>
                                                     )
                                                 }

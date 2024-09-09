@@ -9,7 +9,7 @@ import {
     Input,
 } from "@nextui-org/react";
 import { PasswordVisibilityButton } from "../PasswordVisibilityButton";
-import { useTheme } from "@/ThemeProvider";
+import { useTheme } from "@/Contexts/ThemeContext";
 
 export const ConfirmPassword = ({
     isOpen,

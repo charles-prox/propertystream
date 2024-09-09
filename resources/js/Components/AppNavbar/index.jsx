@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { usePage, useForm, Link } from "@inertiajs/react";
-import { asset, url } from "@/utils/helpers";
+import { url } from "@/utils/helpers";
 import {
     Dropdown,
     DropdownTrigger,
@@ -16,7 +16,6 @@ import {
     Spacer,
     Divider,
 } from "@nextui-org/react";
-import { useTheme } from "@/ThemeProvider";
 import {
     BellIcon,
     CaretDownIcon,
@@ -24,10 +23,10 @@ import {
     MoonIcon,
     SecurityIcon,
     SunIcon,
-    UserIcon,
     UserIdIcon,
 } from "./icons";
 import { appName } from "@/utils/constants";
+import { useTheme } from "@/Contexts/ThemeContext";
 
 const Logo = () => {
     return useMemo(
@@ -129,9 +128,18 @@ const AppNavbar = () => {
                                                           auth?.user
                                                               .profile_photo_path
                                                       )
-                                                    : auth?.user
-                                                          .profile_photo_url,
-                                                fallback: <UserIcon />,
+                                                    : false,
+                                                fallback:
+                                                    auth?.user.first_name[0] +
+                                                    auth?.user.last_name[0],
+                                                classNames: {
+                                                    base: `${
+                                                        auth?.user
+                                                            .profile_photo_path
+                                                            ? "bg-transparent"
+                                                            : "bg-[#EBF4FF] dark:bg-[#7F9CF5]"
+                                                    } text-[#7F9CF5] dark:text-[#EBF4FF] text-lg`,
+                                                },
                                             }}
                                         />
                                         <CaretDownIcon />

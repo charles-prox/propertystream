@@ -7,8 +7,8 @@ import { createInertiaApp } from "@inertiajs/react";
 import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers";
 import { NextUIProvider } from "@nextui-org/react";
 import AppLayout from "@/Layouts/AppLayout";
-import ThemeProvider from "./ThemeProvider";
-import { SideNavStateProvider } from "@/SideNavStateProvider";
+import ThemeProvider from "./Providers/ThemeProvider";
+import { SideNavStateProvider } from "@/Providers/SideNavStateProvider";
 
 const appName = import.meta.env.VITE_APP_NAME || "Laravel";
 

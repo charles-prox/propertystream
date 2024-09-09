@@ -2,7 +2,7 @@ import React from "react";
 import { Modal, ModalContent, ModalBody, Button } from "@nextui-org/react";
 import { WarningIcon, DangerIcon, InfoIcon, SuccessIcon } from "./icons";
 import { CloseIcon } from "../Alert/icons";
-import { useTheme } from "@/ThemeProvider";
+import { useTheme } from "@/Contexts/ThemeContext";
 
 export default function ModalAlert({
     isOpen,
@@ -119,13 +119,17 @@ export default function ModalAlert({
                                 {title || defaults().title}
                             </h3>
                             {!!message && typeof message === "string" ? (
-                                <p className="text-default-500 text-sm">
+                                <p className="text-foreground text-sm">
                                     {message}
                                 </p>
                             ) : (
                                 message
                             )}
-                            {!message && defaults().message}
+                            {!message && (
+                                <p className="text-foreground text-sm">
+                                    {defaults().message}
+                                </p>
+                            )}
                         </div>
                     </div>
                 </ModalBody>

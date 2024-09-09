@@ -1,15 +1,5 @@
-// SideNavStateProvider.js
-import React, {
-    createContext,
-    useState,
-    useContext,
-    useEffect,
-    useCallback,
-} from "react";
-
-const SideNavStateContext = createContext();
-
-export const useSideNavState = () => useContext(SideNavStateContext);
+import React, { useState, useEffect, useCallback } from "react";
+import SideNavStateContext from "@/Contexts/SideNavStateContext";
 
 export const SideNavStateProvider = ({ children }) => {
     const [sideNavState, setSideNavState] = useState(() => {

@@ -8,6 +8,7 @@ use App\Http\Controllers\PropertyDetailsController;
 use App\Http\Controllers\UpdateUserProfileController;
 use App\Http\Controllers\RegisterAdminController;
 use App\Http\Controllers\UserProfileController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -37,6 +38,10 @@ Route::middleware([
         Route::get('/', [PropertyController::class, 'index'])->name('properties');
         Route::post('selected', [PropertyDetailsController::class, 'index'])->name('properties.selected');
         Route::post(' details', [PropertyDetailsController::class, 'store'])->name('properties.details');
+    });
+
+    Route::prefix('users')->group(function () {
+        Route::get('/', [UserController::class, 'index'])->name('users');
     });
 });
 
