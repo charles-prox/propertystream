@@ -12,30 +12,25 @@ import {
     Spinner,
     Button,
 } from "@nextui-org/react";
-import { router, usePage } from "@inertiajs/react";
-import { url } from "@/utils/helpers";
+import { usePage } from "@inertiajs/react";
+import { axiosInstance, url } from "@/utils/helpers";
 import React from "react";
 import { EditIcon, InfoIcon } from "./icons";
-import { DeleteIcon } from "../DataTable/SearchFilterWidget/icons";
-import { TablePagination } from "../DataTable/TablePagination";
+import { DeleteIcon } from "../SearchFilterWidget/icons";
+import { TablePagination } from "../TablePagination";
 import EmptySearchContent from "../EmptySearchContent";
+import { useTableOptions } from "@/Contexts/TableOptionsContext";
 
-const columns = [
-    { name: "NAME", uid: "name" },
-    { name: "EMPLOYMENT", uid: "employment" },
-    { name: "OFFICE", uid: "office" },
-    { name: "ROLES", uid: "roles" },
-    { name: "STATUS", uid: "status" },
-    { name: "ACTIONS", uid: "actions" },
-];
 const statusColorMap = {
     active: "success",
     paused: "danger",
     vacation: "warning",
 };
 
-const UsersDataTable = ({ searchKey, resetSearch, tableOptions }) => {
+const UsersDataTable = ({ tableId, columns }) => {
     const { users } = usePage().props;
+    const { getTableOptions, updateTableOptions } = useTableOptions();
+    const tableOptions = getTableOptions(tableId);
 
     const [loadingState, setLoadingState] = useState("idle");
     const [selectedKeys, setSelectedKeys] = useState(new Set([]));
@@ -44,53 +39,23 @@ const UsersDataTable = ({ searchKey, resetSearch, tableOptions }) => {
         direction: "ascending",
     });
 
-    // console.log("storedTableOptions:" + JSON.stringify(storedTableOptions));
-    const [requestData, setRequestData] = useState(tableOptions);
-
-    // Watch for changes in searchKey prop and apply the changes to requestData using lodash throttle/debounce
     useEffect(() => {
-        if (searchKey) {
-            setRequestData((prevState) => ({
-                ...prevState,
-                search_key: searchKey,
-                current_page: "1",
-            }));
-        } else {
-            handleResetTable();
-        }
-    }, [searchKey]);
-
-    useEffect(() => {
-        sessionStorage.setItem("tableOptions", JSON.stringify(requestData));
         fetchUsers();
-    }, [requestData]);
-
-    useEffect(() => {
-        console.log("resetSearch: " + resetSearch);
-        resetSearch && handleResetTable();
-    }, [resetSearch]);
-
-    // Reset the table search
-    const handleResetTable = () => {
-        setRequestData((prevState) => ({
-            ...prevState,
-            search_key: "",
-        }));
-    };
+    }, [tableOptions]);
 
     const fetchUsers = () => {
-        // @ts-ignore
-        router.get(route("users"), requestData, {
-            only: ["users"],
-            preserveState: true,
-            preserveScroll: true,
-            onStart: () => {
-                setLoadingState("loading");
-            },
-            onFinish: () => {
-                setLoadingState("idle");
-            },
-        });
+        setLoadingState("loading"); // Set loading state before the request
+        axiosInstance
+            .post(route("users.search"), tableOptions)
+            .then((response) => {
+                console.log("response: ", response);
+            })
+            .catch((error) => {
+                console.error("Error fetching users:", error);
+            })
+            .finally(() => {
+                setLoadingState("idle"); // Reset loading state after the request
+            });
     };
 
     const renderCell = useCallback((user, columnKey) => {
@@ -104,6 +69,7 @@ const UsersDataTable = ({ searchKey, resetSearch, tableOptions }) => {
                 return (
                     <User
                         avatarProps={{
+                            size: "md",
                             radius: "lg",
                             fallback: user.first_name[0] + user.last_name[0],
                             src: user.profile_photo_path
@@ -225,20 +191,34 @@ const UsersDataTable = ({ searchKey, resetSearch, tableOptions }) => {
             onSortChange={(descriptor) => {
                 const direction =
                     descriptor.direction === "ascending" ? "asc" : "desc";
-                const column =
-                    descriptor.column === "name"
-                        ? "first_name"
-                        : descriptor.column === "employment"
-                        ? "position"
-                        : // : descriptor.column === "status"
-                          // ? "account_status"
-                          "first_name";
+
+                // Find the column that matches the descriptor.column
+                const matchingColumn = columns.find(
+                    (col) => col.uid === descriptor.column
+                );
+
+                let column;
+                if (
+                    matchingColumn &&
+                    Array.isArray(matchingColumn.dbColumn) &&
+                    matchingColumn.dbColumn.length > 0
+                ) {
+                    // Use the first value in dbColumn array
+                    column = matchingColumn.dbColumn[0];
+                } else if (
+                    matchingColumn &&
+                    typeof matchingColumn.dbColumn === "string"
+                ) {
+                    // If dbColumn is a string, use it directly
+                    column = matchingColumn.dbColumn;
+                } else {
+                    // Fallback to a default column if no match or invalid dbColumn
+                    column = "id"; // or any other default column you prefer
+                }
                 setSortDescriptor(descriptor);
-                console.log("11234121");
-                setRequestData((prevState) => ({
-                    ...prevState,
-                    sort_by: column + ":" + direction,
-                }));
+                updateTableOptions(tableId, {
+                    sort_by: `${column}:${direction}`,
+                });
             }}
             selectedKeys={selectedKeys}
             selectionMode="multiple"
@@ -250,45 +230,38 @@ const UsersDataTable = ({ searchKey, resetSearch, tableOptions }) => {
                             Selected{" "}
                             <span>
                                 {selectedKeys === "all"
-                                    ? users.total
+                                    ? users.total_users
                                     : selectedKeys.size}
                             </span>{" "}
-                            out of <span>{users.total}</span> users
+                            out of <span>{users.total_users}</span> users
                         </p>
                     </div>
                 )
             }
             bottomContentPlacement="outside"
             bottomContent={
-                users.last_page > 0 ? (
+                users.total_pages > 0 ? (
                     <TablePagination
-                        perPage={requestData.per_page.toString()}
-                        lastPage={users.last_page}
-                        paginationPage={
-                            users.current_page || requestData.current_page
-                        }
-                        currenPage={
-                            users.current_page.toString() ||
-                            requestData.current_page.toString()
-                        }
-                        onRowsPerPageChange={(keys) => {
-                            setRequestData((prevState) => ({
-                                ...prevState,
-                                per_page: keys.currentKey,
-                            }));
+                        perPage={tableOptions.per_page}
+                        lastPage={users.total_pages}
+                        currentPage={tableOptions.current_page}
+                        onRowsPerPageChange={(newPerPage) => {
+                            updateTableOptions(tableId, {
+                                per_page: newPerPage,
+                                current_page: "1", // Reset to first page when changing items per page
+                            });
                         }}
-                        onGoToPageChange={(keys) => {
-                            keys &&
-                                setRequestData((prevState) => ({
-                                    ...prevState,
-                                    current_page: keys,
-                                }));
+                        onGoToPageChange={(newPage) => {
+                            if (newPage) {
+                                updateTableOptions(tableId, {
+                                    current_page: newPage,
+                                });
+                            }
                         }}
-                        onPaginationChange={(page) => {
-                            setRequestData((prevState) => ({
-                                ...prevState,
-                                current_page: page,
-                            }));
+                        onPaginationChange={(newPage) => {
+                            updateTableOptions(tableId, {
+                                current_page: newPage,
+                            });
                         }}
                     />
                 ) : null
@@ -308,11 +281,15 @@ const UsersDataTable = ({ searchKey, resetSearch, tableOptions }) => {
                 )}
             </TableHeader>
             <TableBody
-                items={users.data}
+                items={users.rows}
                 loadingContent={<Spinner />}
                 loadingState={loadingState}
                 emptyContent={
-                    <EmptySearchContent resetTable={() => handleResetTable()} />
+                    <EmptySearchContent
+                        resetTable={() =>
+                            updateTableOptions(tableId, { search_key: "" })
+                        }
+                    />
                 }
             >
                 {(item) => (

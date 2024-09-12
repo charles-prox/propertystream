@@ -42,6 +42,7 @@ Route::middleware([
 
     Route::prefix('users')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('users');
+        Route::post('/search', [UserController::class, 'search'])->name('users.search');
     });
 });
 

@@ -12,7 +12,6 @@ export const TablePagination = ({
     perPage,
     lastPage,
     currentPage,
-    paginationPage,
     onRowsPerPageChange,
     onGoToPageChange,
     onPaginationChange,
@@ -26,13 +25,14 @@ export const TablePagination = ({
                         aria-label="Number of users per page"
                         size="sm"
                         className="w-20"
-                        defaultSelectedKeys={[perPage]}
+                        selectedKeys={[perPage]}
                         onSelectionChange={(keys) => {
-                            onRowsPerPageChange(keys);
+                            const newPerPage = Array.from(keys)[0];
+                            onRowsPerPageChange(newPerPage);
                         }}
                     >
-                        {[5, 10, 25, 50].map((num) => (
-                            <SelectItem textValue={num} key={num}>
+                        {["5", "10", "25", "50"].map((num) => (
+                            <SelectItem key={num} value={num}>
                                 {num}
                             </SelectItem>
                         ))}
@@ -44,17 +44,19 @@ export const TablePagination = ({
                     <Autocomplete
                         id="gotopage"
                         name="gotopage"
-                        aria-labelledby="Got to page"
+                        aria-labelledby="Go to page"
                         className="w-20"
                         size="sm"
-                        selectedKey={currentPage}
+                        selectedKey={currentPage.toString()}
                         isClearable={false}
-                        onSelectionChange={(keys) => onGoToPageChange(keys)}
+                        onSelectionChange={(key) => {
+                            onGoToPageChange(key);
+                        }}
                     >
                         {Array.from({ length: lastPage }, (_, i) =>
                             (i + 1).toString()
                         ).map((num) => (
-                            <AutocompleteItem textValue={num} key={num}>
+                            <AutocompleteItem key={num} value={num}>
                                 {num}
                             </AutocompleteItem>
                         ))}
@@ -67,9 +69,11 @@ export const TablePagination = ({
                 showControls
                 showShadow
                 color="primary"
-                page={paginationPage}
+                page={parseInt(currentPage)}
                 total={lastPage}
-                onChange={(page) => onPaginationChange(page)}
+                onChange={(page) => {
+                    onPaginationChange(page.toString());
+                }}
             />
         </div>
     );

@@ -18,7 +18,7 @@ import { router, usePage } from "@inertiajs/react";
 import { decodeHtmlEntities } from "@/utils/helpers";
 import MoreInfo from "./TableElements/MoreInfo";
 import ModalAlert from "../ModalAlert";
-import EmptySearchContent from "../EmptySearchContent";
+import EmptySearchContent from "../DataTables/EmptySearchContent";
 import GenerationDialog from "./TableElements/GenerationDialog";
 import DetailsFormDialog from "./TableElements/DetailsFormDialog";
 import { PdfIcon } from "./icons";

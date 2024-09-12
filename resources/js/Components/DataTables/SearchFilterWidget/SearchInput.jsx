@@ -1,9 +1,14 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Button, Input } from "@nextui-org/react";
 import { SearchIcon } from "./icons";
 
-export const SearchInput = ({ handleSearchKey, handleInputClear }) => {
-    const [tempSearchKey, setTempSearchKey] = React.useState("");
+export const SearchInput = ({ handleSearchKey, handleInputClear, value }) => {
+    const [tempSearchKey, setTempSearchKey] = useState(value || "");
+
+    useEffect(() => {
+        setTempSearchKey(value || "");
+    }, [value]);
+
     const handleSearch = () => {
         handleSearchKey(tempSearchKey);
     };
@@ -12,6 +17,11 @@ export const SearchInput = ({ handleSearchKey, handleInputClear }) => {
         if (event.key === "Enter") {
             handleSearchKey(tempSearchKey);
         }
+    };
+
+    const handleClear = () => {
+        setTempSearchKey("");
+        handleInputClear();
     };
 
     return (
@@ -27,7 +37,7 @@ export const SearchInput = ({ handleSearchKey, handleInputClear }) => {
                 value={tempSearchKey}
                 onValueChange={setTempSearchKey}
                 onKeyDown={handleKeyDown}
-                onClear={() => handleInputClear()}
+                onClear={handleClear}
                 isClearable
             />
             <Button

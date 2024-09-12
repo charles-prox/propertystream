@@ -1,44 +1,41 @@
 import React from "react";
-import { SearchFilterWidget } from "@/Components/DataTable/SearchFilterWidget";
+import { SearchFilterWidget } from "@/Components/DataTables/SearchFilterWidget";
 import { Head } from "@inertiajs/react";
-import UsersDataTable from "@/Components/UsersDataTable";
-import { useTableOptions } from "@/Contexts/TableOptionsContext";
+import UsersDataTable from "@/Components/DataTables/UsersDataTable";
 import { TableOptionsProvider } from "@/Providers/TableOptionsProvider";
 
+const columns = [
+    { name: "NAME", uid: "name", dbColumn: ["first_name", "last_name"] },
+    {
+        name: "EMPLOYMENT",
+        uid: "employment",
+        dbColumn: ["position", "employment_status"],
+    },
+    {
+        name: "OFFICE",
+        uid: "office",
+        dbColumn: ["office_name", "office_address"],
+    },
+    { name: "ROLES", uid: "roles", dbColumn: ["roles"] },
+    { name: "STATUS", uid: "status", dbColumn: ["account_status"] },
+    { name: "ACTIONS", uid: "actions", dbColumn: null },
+];
+
 const UsersContent = () => {
-    const { getTableOptions, updateTableOptions } = useTableOptions();
-    const usersTableOptions = getTableOptions("users");
-
-    const handleSearchKey = (tableId) => (key) => {
-        updateTableOptions(tableId, { search_key: key, current_page: "1" });
-    };
-
-    const handleResetSearch = (tableId) => () => {
-        updateTableOptions(tableId, { search_key: "", current_page: "1" });
-    };
+    const tableId = "users";
 
     return (
         <React.Fragment>
-            <Head title="Profile" />
+            <Head title="Users" />
             <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-end">
                     <div>
                         <h1 className="text-2xl font-bold">Users</h1>
                         <p>Manage User Profiles and Access</p>
                     </div>
-                    <SearchFilterWidget
-                        handleSearchKey={handleSearchKey("users")}
-                        handleResetSearch={handleResetSearch("users")}
-                        columns={[]}
-                    />
+                    <SearchFilterWidget tableId={tableId} columns={columns} />
                 </div>
-                <UsersDataTable
-                    tableId="users"
-                    tableOptions={usersTableOptions}
-                    updateTableOptions={(newOptions) =>
-                        updateTableOptions("users", newOptions)
-                    }
-                />
+                <UsersDataTable tableId={tableId} columns={columns} />
             </div>
         </React.Fragment>
     );
