@@ -110,11 +110,11 @@ export const UserIcon = () => {
     );
 };
 
-export const SaveIcon = () => {
+export const SaveIcon = (props) => {
     return (
         <svg
-            width="2em"
-            height="2em"
+            width={props.width || "2em"}
+            height={props.height || "2em"}
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"

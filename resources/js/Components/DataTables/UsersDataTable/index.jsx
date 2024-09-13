@@ -12,7 +12,6 @@ import {
     Spinner,
     Button,
 } from "@nextui-org/react";
-import { usePage } from "@inertiajs/react";
 import { axiosInstance, url } from "@/utils/helpers";
 import React from "react";
 import { EditIcon, InfoIcon } from "./icons";
@@ -20,6 +19,7 @@ import { DeleteIcon } from "../SearchFilterWidget/icons";
 import { TablePagination } from "../TablePagination";
 import EmptySearchContent from "../EmptySearchContent";
 import { useTableOptions } from "@/Contexts/TableOptionsContext";
+import { router } from "@inertiajs/react";
 
 const statusColorMap = {
     active: "success",
@@ -28,7 +28,12 @@ const statusColorMap = {
 };
 
 const UsersDataTable = ({ tableId, columns }) => {
-    const { users } = usePage().props;
+    // const { data } = usePage().props;
+    const [users, setUsers] = useState({
+        rows: [],
+        total_users: 0,
+        total_pages: 0,
+    });
     const { getTableOptions, updateTableOptions } = useTableOptions();
     const tableOptions = getTableOptions(tableId);
 
@@ -48,7 +53,8 @@ const UsersDataTable = ({ tableId, columns }) => {
         axiosInstance
             .post(route("users.search"), tableOptions)
             .then((response) => {
-                console.log("response: ", response);
+                // console.log("response: ", response);
+                setUsers(response.data);
             })
             .catch((error) => {
                 console.error("Error fetching users:", error);
@@ -173,6 +179,11 @@ const UsersDataTable = ({ tableId, columns }) => {
                                 radius="lg"
                                 color="danger"
                                 className="text-lg text-danger"
+                                onPress={() => {
+                                    router.delete(
+                                        route("users.destroy", user.hris_id)
+                                    );
+                                }}
                             >
                                 <DeleteIcon />
                             </Button>
@@ -188,6 +199,10 @@ const UsersDataTable = ({ tableId, columns }) => {
         <Table
             aria-label="Users data table"
             sortDescriptor={sortDescriptor}
+            selectedKeys={selectedKeys}
+            selectionMode="multiple"
+            onSelectionChange={setSelectedKeys}
+            bottomContentPlacement="outside"
             onSortChange={(descriptor) => {
                 const direction =
                     descriptor.direction === "ascending" ? "asc" : "desc";
@@ -220,9 +235,6 @@ const UsersDataTable = ({ tableId, columns }) => {
                     sort_by: `${column}:${direction}`,
                 });
             }}
-            selectedKeys={selectedKeys}
-            selectionMode="multiple"
-            onSelectionChange={setSelectedKeys}
             topContent={
                 (selectedKeys.size > 0 || selectedKeys === "all") && (
                     <div>
@@ -238,7 +250,6 @@ const UsersDataTable = ({ tableId, columns }) => {
                     </div>
                 )
             }
-            bottomContentPlacement="outside"
             bottomContent={
                 users.total_pages > 0 ? (
                     <TablePagination

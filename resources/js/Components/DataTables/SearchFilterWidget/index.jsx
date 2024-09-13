@@ -17,14 +17,13 @@ export const SearchFilterWidget = ({ tableId, columns }) => {
     };
 
     return (
-        <div className="flex gap-4 items-center">
+        <div className="flex gap-2 items-center">
             <SearchInput
                 handleSearchKey={handleSearchKey}
                 handleInputClear={handleResetSearch}
                 value={tableOptions.search_key}
             />
 
-            <Divider orientation="vertical" className="h-10" />
             <TableFilters tableId={tableId} columns={columns} />
         </div>
     );

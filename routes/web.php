@@ -42,7 +42,12 @@ Route::middleware([
 
     Route::prefix('users')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('users');
+        Route::get('/create', [UserController::class, 'create'])->name('users.create');
+        Route::get('/edit/{id}', [UserController::class, 'edit'])->name('users.edit');
+        Route::post('/store', [UserController::class, 'store'])->name('users.store');
+        Route::post('/update/{id}', [UserController::class, 'update'])->name('users.update');
         Route::post('/search', [UserController::class, 'search'])->name('users.search');
+        Route::delete('/delete/{id}', [UserController::class, 'destroy'])->name('users.destroy');
     });
 });
 

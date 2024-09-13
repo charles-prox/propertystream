@@ -11,6 +11,7 @@ export default function PasswordInput({
     placeholder,
     value,
     setValue,
+    maxWidth,
 }) {
     const [isVisible, setIsVisible] = React.useState(false);
     return (
@@ -30,6 +31,7 @@ export default function PasswordInput({
             classNames={{
                 label: "text-black dark:text-white/90 font-bold",
                 inputWrapper: "border-slate-400",
+                base: maxWidth || "",
             }}
             startContent={<LockIcon />}
             endContent={
