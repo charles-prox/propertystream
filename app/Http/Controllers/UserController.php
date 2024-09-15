@@ -115,15 +115,10 @@ class UserController extends Controller
             $user->delete();
 
             // Redirect or return response
-            return Inertia::render('Users', [
-                'result' => 'success',
-                'action' => 'delete',
-            ]);
+            return response()->json(['message' => 'User deleted successfully']);
         } catch (\Exception $e) {
             // Handle any exceptions
-            return Inertia::render('Users', [
-                'errors' => $e->getMessage(),
-            ]);
+            return response()->json(['message' => 'An error occurred: ' . $e->getMessage()]);
         }
     }
 }

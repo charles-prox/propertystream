@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 import {
     Table,
     TableHeader,
@@ -12,14 +12,13 @@ import {
     Spinner,
     Button,
 } from "@nextui-org/react";
-import { axiosInstance, url } from "@/utils/helpers";
+import { url } from "@/utils/helpers";
 import React from "react";
 import { EditIcon, InfoIcon } from "./icons";
-import { DeleteIcon } from "../SearchFilterWidget/icons";
-import { TablePagination } from "../TablePagination";
-import EmptySearchContent from "../EmptySearchContent";
+import { DeleteIcon } from "../Modules/SearchFilterWidget/icons";
+import { Pagination } from "../Modules/Pagination";
+import EmptySearchContent from "../Modules/EmptySearchContent";
 import { useTableOptions } from "@/Contexts/TableOptionsContext";
-import { router } from "@inertiajs/react";
 
 const statusColorMap = {
     active: "success",
@@ -27,42 +26,22 @@ const statusColorMap = {
     vacation: "warning",
 };
 
-const UsersDataTable = ({ tableId, columns }) => {
-    // const { data } = usePage().props;
-    const [users, setUsers] = useState({
-        rows: [],
-        total_users: 0,
-        total_pages: 0,
-    });
-    const { getTableOptions, updateTableOptions } = useTableOptions();
-    const tableOptions = getTableOptions(tableId);
+const UsersDataTable = ({
+    tableId,
+    tableOptions,
+    data: users,
+    columns,
+    onEdit,
+    onDelete,
+    isLoading,
+}) => {
+    const { updateTableOptions } = useTableOptions();
 
-    const [loadingState, setLoadingState] = useState("idle");
     const [selectedKeys, setSelectedKeys] = useState(new Set([]));
     const [sortDescriptor, setSortDescriptor] = useState({
         column: "name",
         direction: "ascending",
     });
-
-    useEffect(() => {
-        fetchUsers();
-    }, [tableOptions]);
-
-    const fetchUsers = () => {
-        setLoadingState("loading"); // Set loading state before the request
-        axiosInstance
-            .post(route("users.search"), tableOptions)
-            .then((response) => {
-                // console.log("response: ", response);
-                setUsers(response.data);
-            })
-            .catch((error) => {
-                console.error("Error fetching users:", error);
-            })
-            .finally(() => {
-                setLoadingState("idle"); // Reset loading state after the request
-            });
-    };
 
     const renderCell = useCallback((user, columnKey) => {
         const cellValue = user["user_id"];
@@ -167,6 +146,9 @@ const UsersDataTable = ({ tableId, columns }) => {
                                 variant="light"
                                 radius="lg"
                                 className="text-lg text-foreground "
+                                onPress={() => {
+                                    onEdit(user.hris_id);
+                                }}
                             >
                                 <EditIcon />
                             </Button>
@@ -180,9 +162,7 @@ const UsersDataTable = ({ tableId, columns }) => {
                                 color="danger"
                                 className="text-lg text-danger"
                                 onPress={() => {
-                                    router.delete(
-                                        route("users.destroy", user.hris_id)
-                                    );
+                                    onDelete(user.hris_id);
                                 }}
                             >
                                 <DeleteIcon />
@@ -252,7 +232,7 @@ const UsersDataTable = ({ tableId, columns }) => {
             }
             bottomContent={
                 users.total_pages > 0 ? (
-                    <TablePagination
+                    <Pagination
                         perPage={tableOptions.per_page}
                         lastPage={users.total_pages}
                         currentPage={tableOptions.current_page}
@@ -294,7 +274,7 @@ const UsersDataTable = ({ tableId, columns }) => {
             <TableBody
                 items={users.rows}
                 loadingContent={<Spinner />}
-                loadingState={loadingState}
+                loadingState={isLoading ? "loading" : "idle"}
                 emptyContent={
                     <EmptySearchContent
                         resetTable={() =>

@@ -1,13 +1,15 @@
 import React from "react";
-import { SearchFilterWidget } from "@/Components/DataTables/SearchFilterWidget";
+import { SearchFilterWidget } from "@/Components/DataTables/Modules/SearchFilterWidget";
 import { Head, router, usePage } from "@inertiajs/react";
 import UsersDataTable from "@/Components/DataTables/UsersDataTable";
 import { TableOptionsProvider } from "@/Providers/TableOptionsProvider";
 import { Button, Divider } from "@nextui-org/react";
-import { AddIcon } from "@/Components/DataTables/SearchFilterWidget/icons";
+import { AddIcon } from "@/Components/DataTables/Modules/SearchFilterWidget/icons";
 import { UserManagementForm } from "@/Components/Forms/UserManagementForm";
 import { SaveIcon } from "@/Components/Forms/icons";
-import { toTitleCase } from "@/utils/helpers";
+import { axiosInstance, toTitleCase } from "@/utils/helpers";
+import ModalAlert from "@/Components/ModalAlert";
+import { useTableOptions } from "@/Contexts/TableOptionsContext";
 
 const columns = [
     { name: "NAME", uid: "name", dbColumn: ["first_name", "last_name"] },
@@ -28,12 +30,102 @@ const columns = [
 
 const UsersContent = () => {
     const tableId = "users";
+    const { getTableOptions } = useTableOptions();
+    const tableOptions = getTableOptions(tableId);
+    const [alertOptions, setAlertOptions] = React.useState({
+        isOpen: false,
+        type: "",
+        title: "",
+        message: "",
+        autoClose: true,
+    });
+
     const [onSubmit, setOnSubmit] = React.useState(false);
-    const { action } = usePage().props;
+    const [loadingState, setLoadingState] = React.useState(false);
+    const { action, result, user } = usePage().props;
+    const [users, setUsers] = React.useState({
+        rows: [],
+        total_users: 0,
+        total_pages: 0,
+    });
+
+    const onEdit = (user) => {
+        console.log("onEdit: ", user);
+        router.get(route("users.edit", user));
+    };
+
+    const onDelete = (user) => {
+        axiosInstance
+            .delete(route("users.destroy", user))
+            .then((response) => {
+                // console.log("User deleted:", response.data);
+                setAlertOptions({
+                    isOpen: true,
+                    type: "success",
+                    title: "User Deleted",
+                    message: "The user has been successfully deleted.",
+                });
+                fetchUsers();
+            })
+            .catch((error) => {
+                console.error("Error deleting user:", error);
+            });
+    };
+
+    const fetchUsers = () => {
+        setLoadingState(true); // Set loading state before the request
+        axiosInstance
+            .post(route("users.search"), tableOptions)
+            .then((response) => {
+                // console.log("response: ", response);
+                setUsers(response.data);
+            })
+            .catch((error) => {
+                console.error("Error fetching users:", error);
+            })
+            .finally(() => {
+                setLoadingState(false); // Reset loading state after the request
+            });
+    };
+
+    React.useEffect(() => {
+        if (result === "success") {
+            if (action === "create") {
+                setAlertOptions({
+                    isOpen: true,
+                    type: "success",
+                    title: "User Created",
+                    message: "The user has been successfully created.",
+                });
+            }
+            if (action === "edit") {
+                setAlertOptions({
+                    isOpen: true,
+                    type: "success",
+                    title: "User Updated",
+                    message: "The user has been successfully updated.",
+                });
+            }
+        }
+    }, [result]);
+
+    React.useEffect(() => {
+        fetchUsers();
+    }, [tableOptions]);
 
     return (
         <React.Fragment>
             <Head title="Users" />
+            <ModalAlert
+                isOpen={alertOptions.isOpen}
+                setIsAlertOpen={(state) =>
+                    setAlertOptions({ ...alertOptions, isOpen: state })
+                }
+                type={alertOptions.type}
+                title={alertOptions.title}
+                message={alertOptions.message}
+                autoClose={alertOptions.autoClose}
+            />
             <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-end">
                     <div>
@@ -102,10 +194,18 @@ const UsersContent = () => {
                         )}
                     </div>
                 </div>
-                {action === "create" ? (
-                    <UserManagementForm onSubmit={onSubmit} />
+                {action === "create" || action === "edit" ? (
+                    <UserManagementForm onSubmit={onSubmit} user={user} />
                 ) : (
-                    <UsersDataTable tableId={tableId} columns={columns} />
+                    <UsersDataTable
+                        tableId={tableId}
+                        tableOptions={tableOptions}
+                        columns={columns}
+                        onEdit={onEdit}
+                        onDelete={onDelete}
+                        data={users}
+                        isLoading={loadingState}
+                    />
                 )}
             </div>
         </React.Fragment>

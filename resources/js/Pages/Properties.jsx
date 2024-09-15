@@ -1,7 +1,7 @@
 import { Head } from "@inertiajs/react";
 import React from "react";
 import PropertyDataTable from "@/Components/PropertyDataTable";
-import { SearchFilterWidget } from "@/Components/DataTables/SearchFilterWidget";
+import { SearchFilterWidget } from "@/Components/DataTables/Modules/SearchFilterWidget";
 
 const columns = [
     { name: "NAME", uid: "name" },

@@ -2,13 +2,13 @@ import {
     Autocomplete,
     AutocompleteItem,
     Divider,
-    Pagination,
+    Pagination as NextUIPagination,
     Select,
     SelectItem,
 } from "@nextui-org/react";
 import React from "react";
 
-export const TablePagination = ({
+export const Pagination = ({
     perPage,
     lastPage,
     currentPage,
@@ -64,7 +64,7 @@ export const TablePagination = ({
                 </div>
             </div>
 
-            <Pagination
+            <NextUIPagination
                 isCompact
                 showControls
                 showShadow

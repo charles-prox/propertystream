@@ -15,12 +15,10 @@ import { employmentStatus } from "@/utils/constants";
 import { SaveIcon } from "./icons";
 import Alert from "../Alert";
 import { toTitleCase } from "@/utils/helpers";
-import ModalAlert from "../ModalAlert";
 
-export const UserManagementForm = ({ onSubmit }) => {
+export const UserManagementForm = ({ onSubmit, user }) => {
     const formRef = React.useRef(null);
-    const { offices, roles, result } = usePage().props;
-    const [isAlertOpen, setIsAlertOpen] = React.useState(false);
+    const { offices, roles } = usePage().props;
     const { data, setData, post, processing, errors, reset } = useForm({
         hris_id: "",
         user_id: "",
@@ -35,6 +33,12 @@ export const UserManagementForm = ({ onSubmit }) => {
         password: "",
         password_confirmation: "",
     });
+
+    React.useEffect(() => {
+        if (user) {
+            setData(user);
+        }
+    }, [user]);
 
     React.useEffect(() => {
         return () => {
@@ -60,24 +64,8 @@ export const UserManagementForm = ({ onSubmit }) => {
         });
     };
 
-    React.useEffect(() => {
-        if (result === "success") {
-            setIsAlertOpen(true);
-        }
-    }, [result]);
-
     return (
         <div className="pt-10">
-            <ModalAlert
-                isOpen={isAlertOpen}
-                setIsAlertOpen={(state) => setIsAlertOpen(state)}
-                type={"success"}
-                title={"Successful in creating new user"}
-                message={
-                    "We have successfully created a new user. You can now proceed to add more users."
-                }
-                autoClose={true}
-            />
             <form ref={formRef} onSubmit={submit}>
                 <div className="flex flex-col gap-10">
                     {Object.keys(errors).length !== 0 && (
