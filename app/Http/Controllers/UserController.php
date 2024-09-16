@@ -52,6 +52,7 @@ class UserController extends Controller
     {
         // Fetch the user based on the slug
         $user = User::where('hris_id', $id)->firstOrFail();
+        $user->role = $user->getRoleNames(); // Add user role to the user object
 
         return Inertia::render('Users', [
             'action' => 'edit', // Pass the user data for editing
@@ -120,5 +121,10 @@ class UserController extends Controller
             // Handle any exceptions
             return response()->json(['message' => 'An error occurred: ' . $e->getMessage()]);
         }
+    }
+
+    public function update(UserRequest $request, $id)
+    {
+        dd($request->all());
     }
 }

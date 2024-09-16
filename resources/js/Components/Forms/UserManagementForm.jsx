@@ -7,6 +7,7 @@ import {
     Button,
     Card,
     CardBody,
+    Checkbox,
     Divider,
     Input,
     Spacer,
@@ -16,9 +17,24 @@ import { SaveIcon } from "./icons";
 import Alert from "../Alert";
 import { toTitleCase } from "@/utils/helpers";
 
-export const UserManagementForm = ({ onSubmit, user }) => {
-    const formRef = React.useRef(null);
-    const { offices, roles } = usePage().props;
+const userStatus = [
+    {
+        key: "active",
+        label: "Active",
+    },
+    {
+        key: "inactive",
+        label: "Inactive",
+    },
+    {
+        key: "pending",
+        label: "Pending",
+    },
+];
+
+export const UserManagementForm = ({ onSubmit, user, isSubmitting }) => {
+    const userformRef = React.useRef(null);
+    const { offices, roles, action } = usePage().props;
     const { data, setData, post, processing, errors, reset } = useForm({
         hris_id: "",
         user_id: "",
@@ -32,6 +48,9 @@ export const UserManagementForm = ({ onSubmit, user }) => {
         email: "",
         password: "",
         password_confirmation: "",
+        role: "",
+        reset_password: false,
+        account_status: "active",
     });
 
     React.useEffect(() => {
@@ -47,6 +66,10 @@ export const UserManagementForm = ({ onSubmit, user }) => {
     }, []);
 
     React.useEffect(() => {
+        isSubmitting(processing);
+    }, [processing]);
+
+    React.useEffect(() => {
         if (onSubmit) {
             if (formRef.current) {
                 formRef.current.requestSubmit(); // Trigger form submission
@@ -57,16 +80,19 @@ export const UserManagementForm = ({ onSubmit, user }) => {
     const submit = (e) => {
         e.preventDefault();
 
-        post(route("users.store"), {
-            onSuccess: () => {
-                reset();
-            },
-        });
+        action === "create" &&
+            post(route("users.store"), {
+                onSuccess: () => {
+                    reset();
+                },
+            });
+
+        action === "edit" && post(route("users.update", user.id));
     };
 
     return (
         <div className="pt-10">
-            <form ref={formRef} onSubmit={submit}>
+            <form ref={userformRef} onSubmit={submit}>
                 <div className="flex flex-col gap-10">
                     {Object.keys(errors).length !== 0 && (
                         <div>
@@ -373,6 +399,11 @@ export const UserManagementForm = ({ onSubmit, user }) => {
                                             name="employment_status"
                                             id="employment_status"
                                             defaultItems={employmentStatus}
+                                            defaultSelectedKey={
+                                                data.employment_status
+                                                    ? data.employment_status
+                                                    : user.employment_status
+                                            }
                                             label="Employment Status"
                                             placeholder="Current employment status"
                                             labelPlacement="outside"
@@ -419,6 +450,10 @@ export const UserManagementForm = ({ onSubmit, user }) => {
                                             name="office_id"
                                             id="office_id"
                                             defaultItems={offices}
+                                            defaultSelectedKey={
+                                                data.office_id.toString() ||
+                                                user.office_id.toString()
+                                            }
                                             label="Office"
                                             placeholder="Enter your office department/section/office"
                                             labelPlacement="outside"
@@ -435,7 +470,7 @@ export const UserManagementForm = ({ onSubmit, user }) => {
                                             className="min-w-64"
                                             menuTrigger="input"
                                             onSelectionChange={(key) => {
-                                                // console.log("value: " + key);
+                                                console.log("value: ", key);
                                                 setData("office_id", key);
                                             }}
                                             onKeyDown={(e) =>
@@ -471,6 +506,47 @@ export const UserManagementForm = ({ onSubmit, user }) => {
                                 <CardBody className="p-0">
                                     <div className="flex flex-col gap-5 p-8">
                                         <Autocomplete
+                                            name="account_status"
+                                            id="account_status"
+                                            defaultItems={userStatus}
+                                            label="User Status"
+                                            placeholder="Set user status"
+                                            labelPlacement="outside"
+                                            variant="bordered"
+                                            defaultSelectedKey={
+                                                data.account_status ||
+                                                user.account_status
+                                            }
+                                            inputProps={{
+                                                classNames: {
+                                                    label: "text-black dark:text-white/90 font-bold",
+                                                    inputWrapper:
+                                                        "border-slate-400",
+                                                    base: "max-w-lg",
+                                                },
+                                            }}
+                                            isClearable={false}
+                                            className="min-w-64"
+                                            menuTrigger="input"
+                                            onSelectionChange={(key) => {
+                                                setData("account_status", key);
+                                            }}
+                                            onKeyDown={(e) =>
+                                                e.continuePropagation()
+                                            } //to stop console error: console.js:213 stopPropagation is now the default behavior for events in React Spectrum. You can use continuePropagation() to revert this behavior.
+                                            isRequired
+                                            isInvalid={!!errors.account_status}
+                                            errorMessage={errors.account_status}
+                                        >
+                                            {(status) => (
+                                                <AutocompleteItem
+                                                    key={status.key}
+                                                >
+                                                    {status.label}
+                                                </AutocompleteItem>
+                                            )}
+                                        </Autocomplete>
+                                        <Autocomplete
                                             name="role"
                                             id="role"
                                             defaultItems={roles}
@@ -478,6 +554,9 @@ export const UserManagementForm = ({ onSubmit, user }) => {
                                             placeholder="Select user role"
                                             labelPlacement="outside"
                                             variant="bordered"
+                                            defaultSelectedKey={
+                                                data.role[0] || user.role[0]
+                                            }
                                             inputProps={{
                                                 classNames: {
                                                     label: "text-black dark:text-white/90 font-bold",
@@ -508,33 +587,71 @@ export const UserManagementForm = ({ onSubmit, user }) => {
                                                 </AutocompleteItem>
                                             )}
                                         </Autocomplete>
-                                        <PasswordInput
-                                            name="password"
-                                            label="Password"
-                                            placeholder="Set your password"
-                                            labelPlacement="outside"
-                                            maxWidth={"max-w-lg"}
-                                            value={data.password}
-                                            setValue={(val) =>
-                                                setData("password", val)
-                                            }
-                                            error={errors.password}
-                                        />
-                                        <PasswordInput
-                                            name="password_confirmation"
-                                            label="Confirm password"
-                                            placeholder="Enter your password again"
-                                            labelPlacement="outside"
-                                            value={data.password_confirmation}
-                                            maxWidth={"max-w-lg"}
-                                            setValue={(val) =>
-                                                setData(
-                                                    "password_confirmation",
-                                                    val
-                                                )
-                                            }
-                                            error={errors.password_confirmation}
-                                        />
+                                        {action === "edit" && (
+                                            <Checkbox
+                                                isSelected={data.reset_password}
+                                                onValueChange={(state) => {
+                                                    setData(
+                                                        "reset_password",
+                                                        state
+                                                    );
+                                                }}
+                                            >
+                                                Reset user password?
+                                            </Checkbox>
+                                        )}
+                                        {(action === "create" ||
+                                            data.reset_password) && (
+                                            <>
+                                                <PasswordInput
+                                                    name="password"
+                                                    label={`${
+                                                        data.reset_password
+                                                            ? "Set"
+                                                            : "Reset"
+                                                    } Password`}
+                                                    placeholder={`Set user's ${
+                                                        data.reset_password
+                                                            ? "new"
+                                                            : "default"
+                                                    } password`}
+                                                    labelPlacement="outside"
+                                                    maxWidth={"max-w-lg"}
+                                                    value={data.password}
+                                                    setValue={(val) =>
+                                                        setData("password", val)
+                                                    }
+                                                    error={errors.password}
+                                                />
+                                                <PasswordInput
+                                                    name="password_confirmation"
+                                                    label={`Confirm ${
+                                                        data.reset_password
+                                                            ? "new"
+                                                            : "default"
+                                                    } password`}
+                                                    placeholder={`Enter ${
+                                                        data.reset_password
+                                                            ? "new"
+                                                            : "default"
+                                                    } user password again`}
+                                                    labelPlacement="outside"
+                                                    value={
+                                                        data.password_confirmation
+                                                    }
+                                                    maxWidth={"max-w-lg"}
+                                                    setValue={(val) =>
+                                                        setData(
+                                                            "password_confirmation",
+                                                            val
+                                                        )
+                                                    }
+                                                    error={
+                                                        errors.password_confirmation
+                                                    }
+                                                />
+                                            </>
+                                        )}
                                     </div>
                                 </CardBody>
                             </Card>
@@ -552,6 +669,7 @@ export const UserManagementForm = ({ onSubmit, user }) => {
                                 color={"currentColor"}
                             />
                         }
+                        isLoading={processing}
                         type="submit"
                     >
                         Save user

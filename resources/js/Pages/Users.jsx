@@ -110,7 +110,9 @@ const UsersContent = () => {
     }, [result]);
 
     React.useEffect(() => {
-        fetchUsers();
+        if (action !== "edit" && action !== "create") {
+            fetchUsers();
+        }
     }, [tableOptions]);
 
     return (
@@ -161,6 +163,7 @@ const UsersContent = () => {
                                     onPress={() => {
                                         setOnSubmit(true);
                                     }}
+                                    isLoading={loadingState}
                                 >
                                     Save user
                                 </Button>
@@ -195,7 +198,11 @@ const UsersContent = () => {
                     </div>
                 </div>
                 {action === "create" || action === "edit" ? (
-                    <UserManagementForm onSubmit={onSubmit} user={user} />
+                    <UserManagementForm
+                        onSubmit={onSubmit}
+                        user={user}
+                        isSubmitting={(state) => setLoadingState(state)}
+                    />
                 ) : (
                     <UsersDataTable
                         tableId={tableId}

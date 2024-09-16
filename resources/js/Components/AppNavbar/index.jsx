@@ -34,7 +34,7 @@ const Logo = () => {
             <Image
                 width={40}
                 alt="App logo"
-                src={"../logo.png"}
+                src={url("../logo.png")}
                 loading="lazy"
                 removeWrapper
             />
