@@ -1,67 +1,33 @@
 import React from "react";
 
 import { usePage } from "@inertiajs/react";
-import AppNavbar from "@/Components/AppNavbar";
-import SideNavbar from "@/Components/SideNavbar";
-import { Spacer } from "@nextui-org/react";
-import AuthLayout from "./AuthLayout";
-import { useSideNavState } from "@/Contexts/SideNavStateContext";
+// import SideNavbar from "@/Components/SideNavbar";
+import { Button, Spacer } from "@nextui-org/react";
 import { useTheme } from "@/Contexts/ThemeContext";
+import Sidebar from "@/Components/SideNavbar";
+import AppNavbar from "@/Components/AppNavbar";
 
 const AppLayout = ({ children }) => {
-    const minSideNavWidth = 16;
-    const maxSideNavWidth = 60;
-    const animationOptions = {
-        delay: 200,
-        duration: 100,
-    };
-    const { component } = usePage();
-    const { sideNavState } = useSideNavState();
-    const theme = useTheme().theme;
+    const { theme } = useTheme();
+    return (
+        <main className={`${theme} text-foreground bg-background`}>
+            <div className="flex flex-col h-screen ">
+                {/* Navbar */}
+                <AppNavbar />
 
-    switch (component.startsWith("Auth/")) {
-        // if the component is in login, use LoginLayout
-        case true:
-            return (
-                <main>
-                    <AuthLayout>{children}</AuthLayout>
-                </main>
-            );
+                {/* Main Content */}
+                <div className="flex">
+                    {/* Sidebar */}
+                    <Sidebar />
 
-        default:
-            return (
-                <main
-                    className={`${theme} text-foreground bg-background flex flex-col h-screen `}
-                >
-                    <AppNavbar />
-                    <div
-                        className={`flex flex-grow overflow-auto bg-slate-300/10`}
-                    >
-                        {/* Side Navbar */}
-                        <SideNavbar
-                            minSideNavWidth={minSideNavWidth}
-                            maxSideNavWidth={maxSideNavWidth}
-                            animationOptions={animationOptions}
-                        />
-                        <Spacer
-                            x={
-                                sideNavState === "collapse"
-                                    ? minSideNavWidth
-                                    : maxSideNavWidth
-                            }
-                            className={`transition-all delay-${animationOptions.delay} duration-${animationOptions.duration}`}
-                        />
-                        <div
-                            className={`
-                                    flex-grow p-10 overflow-y-auto  bg-slate-400/10
-                                   `}
-                        >
-                            {children}
-                        </div>
+                    {/* Main Content Area */}
+                    <div className="flex-1 overflow-y-auto p-10">
+                        {children}
                     </div>
-                </main>
-            );
-    }
+                </div>
+            </div>
+        </main>
+    );
 };
 
 export default AppLayout;

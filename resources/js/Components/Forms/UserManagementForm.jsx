@@ -12,10 +12,10 @@ import {
     Input,
     Spacer,
 } from "@nextui-org/react";
-import { employmentStatus } from "@/utils/constants";
+import { employmentStatus } from "@/Utils/constants";
 import { SaveIcon } from "./icons";
 import Alert from "../Alert";
-import { toTitleCase } from "@/utils/helpers";
+import { toTitleCase } from "@/Utils/helpers";
 
 const userStatus = [
     {

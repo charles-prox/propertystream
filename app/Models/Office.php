@@ -31,4 +31,9 @@ class Office extends Model
     {
         return $this->hasMany(Office::class, 'parent_id');
     }
+
+    public function users()
+    {
+        return $this->hasMany(User::class, 'office_id');
+    }
 }

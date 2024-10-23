@@ -12,7 +12,7 @@ import {
     Spinner,
     Button,
 } from "@nextui-org/react";
-import { url } from "@/utils/helpers";
+import { url } from "@/Utils/helpers";
 import React from "react";
 import { EditIcon, InfoIcon } from "./icons";
 import { DeleteIcon } from "../Modules/SearchFilterWidget/icons";
@@ -98,10 +98,10 @@ const UsersDataTable = ({
                 return (
                     <div className="flex flex-col">
                         <p className="text-bold text-sm capitalize">
-                            {user.office_name}
+                            {user.office.name}
                         </p>
                         <p className="text-bold text-sm capitalize text-default-400 max-w-md">
-                            {user.office_address}
+                            {user.office.address}
                         </p>
                     </div>
                 );

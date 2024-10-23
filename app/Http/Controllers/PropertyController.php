@@ -9,10 +9,15 @@ use App\Models\PropertyDetails;
 
 class PropertyController extends Controller
 {
+
+    public function index()
+    {
+        return Inertia::render('Properties');
+    }
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function getProperties(Request $request)
     {
         $url = 'http://172.22.122.90/api/v1/hardware';
 
@@ -32,16 +37,17 @@ class PropertyController extends Controller
             $url .= '&' . 'order=' . $request->input("order_by");
         }
 
-
         $properties = Http::withHeaders([
-            'Authorization' => 'Bearer ' . env('API_TOKEN'),
+            'Authorization' => 'Bearer ' . config('snipeit.token'),
             "Content-Type" => "application/json",
             'Accept' => 'application/json',
         ])->get($url);
 
-        $properties_with_details = PropertyDetails::pluck('property_id')->toArray();
+        $propertiesWithDetails = PropertyDetails::pluck('property_id')->toArray();
         $propertiesJson = $properties->json();
         // Check if the response is successful
+
+
         if ($properties->successful()) {
             $users = 'http://172.22.122.90/api/v1/users';
             // // Loop through each object in the array
@@ -96,11 +102,24 @@ class PropertyController extends Controller
                     }
                 }
             }
+            // Get the number of items per page from the request or set a default value
+            $perPage = $request->input("per_page", 10); // Default to 10 if not provided
 
-            return Inertia::render('Properties', [
+            // Calculate total pages
+            $totalPages = ceil($propertiesJson['total'] / $perPage);
+
+            // Add total_pages to propertiesJson
+            $propertiesJson['total_pages'] = $totalPages;
+
+            // return Inertia::render('Properties', [
+            //     'properties' => $propertiesJson,
+            //     'properties_with_details' => $properties_with_details,
+            //     // 'url' => $url
+            // ]);
+            // dd($propertiesWithDetails);
+            return response()->json([
                 'properties' => $propertiesJson,
-                'properties_with_details' => $properties_with_details,
-                // 'url' => $url
+                'propertiesWithDetails' => $propertiesWithDetails,
             ]);
         }
 

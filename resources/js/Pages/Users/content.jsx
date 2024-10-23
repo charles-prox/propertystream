@@ -2,14 +2,15 @@ import React from "react";
 import { SearchFilterWidget } from "@/Components/DataTables/Modules/SearchFilterWidget";
 import { Head, router, usePage } from "@inertiajs/react";
 import UsersDataTable from "@/Components/DataTables/UsersDataTable";
-import { TableOptionsProvider } from "@/Providers/TableOptionsProvider";
 import { Button, Divider } from "@nextui-org/react";
 import { AddIcon } from "@/Components/DataTables/Modules/SearchFilterWidget/icons";
 import { UserManagementForm } from "@/Components/Forms/UserManagementForm";
 import { SaveIcon } from "@/Components/Forms/icons";
-import { axiosInstance, toTitleCase } from "@/utils/helpers";
+import { toTitleCase } from "@/Utils/helpers";
+import { axiosInstance } from "@/Utils/axios";
 import ModalAlert from "@/Components/ModalAlert";
 import { useTableOptions } from "@/Contexts/TableOptionsContext";
+import useFetch from "@/Hooks/useFetch";
 
 const columns = [
     { name: "NAME", uid: "name", dbColumn: ["first_name", "last_name"] },
@@ -32,6 +33,7 @@ const UsersContent = () => {
     const tableId = "users";
     const { getTableOptions } = useTableOptions();
     const tableOptions = getTableOptions(tableId);
+
     const [alertOptions, setAlertOptions] = React.useState({
         isOpen: false,
         type: "",
@@ -41,13 +43,28 @@ const UsersContent = () => {
     });
 
     const [onSubmit, setOnSubmit] = React.useState(false);
-    const [loadingState, setLoadingState] = React.useState(false);
+    // const [loadingState, setLoadingState] = React.useState(false);
     const { action, result, user } = usePage().props;
-    const [users, setUsers] = React.useState({
-        rows: [],
-        total_users: 0,
-        total_pages: 0,
-    });
+    // const [users, setUsers] = React.useState({
+    //     rows: [],
+    //     total_users: 0,
+    //     total_pages: 0,
+    // });
+    const {
+        data: users,
+        loading: loadingState,
+        error: error,
+        refetch,
+    } = useFetch(
+        route("users.search"),
+        {
+            rows: [],
+            total_users: 0,
+            total_pages: 0,
+        },
+        "POST",
+        tableOptions
+    );
 
     const onEdit = (user) => {
         console.log("onEdit: ", user);
@@ -65,26 +82,10 @@ const UsersContent = () => {
                     title: "User Deleted",
                     message: "The user has been successfully deleted.",
                 });
-                fetchUsers();
+                refetch();
             })
             .catch((error) => {
                 console.error("Error deleting user:", error);
-            });
-    };
-
-    const fetchUsers = () => {
-        setLoadingState(true); // Set loading state before the request
-        axiosInstance
-            .post(route("users.search"), tableOptions)
-            .then((response) => {
-                // console.log("response: ", response);
-                setUsers(response.data);
-            })
-            .catch((error) => {
-                console.error("Error fetching users:", error);
-            })
-            .finally(() => {
-                setLoadingState(false); // Reset loading state after the request
             });
     };
 
@@ -110,8 +111,9 @@ const UsersContent = () => {
     }, [result]);
 
     React.useEffect(() => {
+        refetch();
         if (action !== "edit" && action !== "create") {
-            fetchUsers();
+            refetch();
         }
     }, [tableOptions]);
 
@@ -219,12 +221,4 @@ const UsersContent = () => {
     );
 };
 
-const Users = () => {
-    return (
-        <TableOptionsProvider>
-            <UsersContent />
-        </TableOptionsProvider>
-    );
-};
-
-export default Users;
+export default UsersContent;

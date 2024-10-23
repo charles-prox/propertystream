@@ -6,22 +6,20 @@ import {
     TableBody,
     TableRow,
     TableCell,
-    Pagination,
     Chip,
     Spinner,
-    Select,
-    SelectItem,
     Button,
     Divider,
 } from "@nextui-org/react";
-import { router, usePage } from "@inertiajs/react";
-import { decodeHtmlEntities } from "@/utils/helpers";
+import { decodeHtmlEntities } from "@/Utils/helpers";
 import MoreInfo from "./TableElements/MoreInfo";
-import ModalAlert from "../ModalAlert";
-import EmptySearchContent from "../DataTables/Modules/EmptySearchContent";
+import EmptySearchContent from "../Modules/EmptySearchContent";
 import GenerationDialog from "./TableElements/GenerationDialog";
 import DetailsFormDialog from "./TableElements/DetailsFormDialog";
 import { PdfIcon } from "./icons";
+import { useTableOptions } from "@/Contexts/TableOptionsContext";
+import { Pagination } from "../Modules/Pagination";
+import ModalAlert from "@/Components/ModalAlert";
 
 // Mapping status labels to color codes for displaying in the table
 const statusColorMap = {
@@ -32,13 +30,16 @@ const statusColorMap = {
     "For Disposal": "danger",
 };
 
-const PropertyDataTable = ({ searchKey, columns, resetSearch }) => {
-    const { properties, properties_with_details } = usePage().props;
-
-    // Load the table options from session storage on component mount
-    const assetsTableOptions = JSON.parse(
-        sessionStorage.getItem("assetsTableOptions")
-    );
+const PropertyDataTable = ({
+    tableId,
+    tableOptions,
+    data: properties,
+    columns,
+    isLoading,
+    propertiesWithDetails: properties_with_details,
+    updateTable,
+}) => {
+    const { updateTableOptions } = useTableOptions();
 
     // Load selected property keys from session storage on component mount
     const selectedProperties = JSON.parse(
@@ -46,7 +47,6 @@ const PropertyDataTable = ({ searchKey, columns, resetSearch }) => {
     );
 
     // State management for various aspects of the table and dialogs
-    const [loadingState, setLoadingState] = useState("idle");
     const [disabledKeys, setDisabledKeys] = useState([]);
     const [currentProperty, setCurrentProperty] = useState(-1);
     const [selectedKeys, setSelectedKeys] = useState({
@@ -63,17 +63,6 @@ const PropertyDataTable = ({ searchKey, columns, resetSearch }) => {
         column: "name",
         direction: "ascending",
     });
-    const [tableOptions, setTableOptions] = useState(
-        assetsTableOptions || {
-            current_page: 1,
-            per_page: 10,
-            sort_by: "",
-            order_by: "",
-            search_key: "",
-        }
-    );
-
-    const pages = Math.ceil(properties.total / tableOptions.per_page);
 
     // Initialize disabled rows in the table based on the properties' status
     useEffect(() => {
@@ -100,53 +89,14 @@ const PropertyDataTable = ({ searchKey, columns, resetSearch }) => {
         );
     }, [selectedKeys]);
 
-    // Execute fetchData function every time there are changes in tableOptions
-    useEffect(() => {
-        sessionStorage.setItem(
-            "assetsTableOptions",
-            JSON.stringify(tableOptions)
-        );
-        fetchData();
-    }, [tableOptions]);
-
-    // Update tableOptions every time searchKey is updated
-    useEffect(() => {
-        if (searchKey) {
-            setTableOptions((prevState) => ({
-                ...prevState,
-                search_key: searchKey,
-                current_page: 1,
-            }));
-        } else {
-            handleResetTable();
-        }
-    }, [searchKey]);
-
-    // Function to fetch/update data from third party api
-    const fetchData = () => {
-        router.get(route("properties"), tableOptions, {
-            only: ["properties"],
-            preserveState: true,
-            preserveScroll: true,
-            onStart: () => {
-                setLoadingState("loading");
-            },
-            onFinish: () => {
-                setLoadingState("idle");
-            },
-        });
-    };
-
     // Handle changes in table sorting
     const handleTableSort = (descriptor) => {
         const direction = descriptor.direction === "ascending" ? "asc" : "desc";
         const column = descriptor.column;
         setSortDescriptor(descriptor);
-        setTableOptions((prevState) => ({
-            ...prevState,
-            sort_by: column,
-            order_by: direction,
-        }));
+        updateTableOptions(tableId, {
+            sort_by: `${column}:${direction}`,
+        });
     };
 
     // Handle row selection
@@ -208,16 +158,8 @@ const PropertyDataTable = ({ searchKey, columns, resetSearch }) => {
                               ),
                           ],
             }));
+            updateTable();
         } else setIsDialogFormOpen(state);
-    };
-
-    // Reset the table search
-    const handleResetTable = () => {
-        resetSearch();
-        setTableOptions((prevState) => ({
-            ...prevState,
-            search_key: "",
-        }));
     };
 
     // Dynamically process and render values in the table cells
@@ -317,55 +259,31 @@ const PropertyDataTable = ({ searchKey, columns, resetSearch }) => {
 
     // Pagination bar component
     const PaginationBar = () => {
-        return (
-            <div className="flex w-full justify-between">
-                <div className="flex justify-center items-center ">
-                    <p className="text-default-500 pr-1">Rows per page:</p>
-                    <Select
-                        aria-label="Number of users per page"
-                        size="sm"
-                        className="w-20"
-                        defaultSelectedKeys={[tableOptions.per_page.toString()]}
-                        onSelectionChange={(keys) => {
-                            setTableOptions((prevState) => ({
-                                ...prevState,
-                                per_page: keys.currentKey,
-                                current_page:
-                                    tableOptions.current_page <=
-                                    Math.ceil(
-                                        properties.total / keys.currentKey
-                                    )
-                                        ? tableOptions.current_page
-                                        : Math.ceil(
-                                              properties.total / keys.currentKey
-                                          ),
-                            }));
-                        }}
-                    >
-                        {[5, 10, 25, 50].map((num) => (
-                            <SelectItem textValue={num} key={num}>
-                                {num}
-                            </SelectItem>
-                        ))}
-                    </Select>
-                </div>
-
-                <Pagination
-                    isCompact
-                    showControls
-                    showShadow
-                    color="primary"
-                    page={tableOptions.current_page}
-                    total={pages}
-                    onChange={(page) =>
-                        setTableOptions((prevState) => ({
-                            ...prevState,
-                            current_page: page,
-                        }))
+        return properties.total_pages > 0 ? (
+            <Pagination
+                perPage={tableOptions.per_page}
+                lastPage={properties.total_pages}
+                currentPage={tableOptions.current_page}
+                onRowsPerPageChange={(newPerPage) => {
+                    updateTableOptions(tableId, {
+                        per_page: newPerPage,
+                        current_page: "1", // Reset to first page when changing items per page
+                    });
+                }}
+                onGoToPageChange={(newPage) => {
+                    if (newPage) {
+                        updateTableOptions(tableId, {
+                            current_page: newPage,
+                        });
                     }
-                />
-            </div>
-        );
+                }}
+                onPaginationChange={(newPage) => {
+                    updateTableOptions(tableId, {
+                        current_page: newPage,
+                    });
+                }}
+            />
+        ) : null;
     };
 
     // Header that shows when at least a row is selected
@@ -452,7 +370,7 @@ const PropertyDataTable = ({ searchKey, columns, resetSearch }) => {
                 <TableBody
                     items={properties.rows}
                     loadingContent={<Spinner />}
-                    loadingState={loadingState}
+                    loadingState={isLoading}
                     emptyContent={
                         <EmptySearchContent
                             resetTable={() => handleResetTable()}
@@ -503,6 +421,7 @@ const PropertyDataTable = ({ searchKey, columns, resetSearch }) => {
                     handleDialogFormState(state, key);
                 }}
                 property={currentProperty}
+                properties={properties}
             />
         </div>
     );

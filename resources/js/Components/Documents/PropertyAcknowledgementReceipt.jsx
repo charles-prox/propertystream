@@ -12,7 +12,7 @@ import {
     decodeHtmlEntities,
     getCurrentDate,
     toTitleCase,
-} from "@/utils/helpers";
+} from "@/Utils/helpers";
 
 const PropertyAcknowledgementReceipt = ({ formData }) => {
     return (

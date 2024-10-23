@@ -7,7 +7,7 @@ import {
     Button,
     Input,
 } from "@nextui-org/react";
-import { employmentStatus } from "@/utils/constants";
+import { employmentStatus } from "@/Utils/constants";
 
 export const RegisterForm = () => {
     const { offices } = usePage().props;

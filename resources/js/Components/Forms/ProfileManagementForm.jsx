@@ -11,9 +11,9 @@ import {
     Spacer,
 } from "@nextui-org/react";
 import { router, useForm, usePage } from "@inertiajs/react";
-import { toTitleCase, url } from "@/utils/helpers";
+import { toTitleCase, url } from "@/Utils/helpers";
 import Alert from "../Alert";
-import { employmentStatus } from "@/utils/constants";
+import { employmentStatus } from "@/Utils/constants";
 import ModalAlert from "../ModalAlert";
 import Dropzone from "react-dropzone";
 

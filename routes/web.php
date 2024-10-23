@@ -7,8 +7,10 @@ use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\PropertyDetailsController;
 use App\Http\Controllers\UpdateUserProfileController;
 use App\Http\Controllers\RegisterAdminController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\OfficeController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -36,6 +38,7 @@ Route::middleware([
 
     Route::prefix('properties')->group(function () {
         Route::get('/', [PropertyController::class, 'index'])->name('properties');
+        Route::post('get', [PropertyController::class, 'getProperties'])->name('properties.get');
         Route::post('selected', [PropertyDetailsController::class, 'index'])->name('properties.selected');
         Route::post(' details', [PropertyDetailsController::class, 'store'])->name('properties.details');
     });
@@ -49,6 +52,10 @@ Route::middleware([
         Route::post('/search', [UserController::class, 'search'])->name('users.search');
         Route::delete('/delete/{id}', [UserController::class, 'destroy'])->name('users.destroy');
     });
+
+    Route::prefix('reports')->group(function () {
+        Route::get('/', [ReportController::class, 'index'])->name('reports');
+    });
 });
 
 
@@ -59,3 +66,7 @@ Route::get('/register', [RegisterAdminController::class, 'create'])
 Route::get('/login', [LoginController::class, 'create'])
     ->middleware(['guest'])
     ->name('login');
+
+Route::get('/offices', [OfficeController::class, 'index'])
+    ->middleware(['guest'])
+    ->name('offices');

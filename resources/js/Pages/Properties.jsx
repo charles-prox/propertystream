@@ -1,7 +1,10 @@
-import { Head } from "@inertiajs/react";
+import { Head, router, usePage } from "@inertiajs/react";
 import React from "react";
-import PropertyDataTable from "@/Components/PropertyDataTable";
+import PropertyDataTable from "@/Components/DataTables/PropertyDataTable";
 import { SearchFilterWidget } from "@/Components/DataTables/Modules/SearchFilterWidget";
+import { useTableOptions } from "@/Contexts/TableOptionsContext";
+import { TableOptionsProvider } from "@/Providers/TableOptionsProvider";
+import { axiosInstance } from "@/Utils/helpers";
 
 const columns = [
     { name: "NAME", uid: "name" },
@@ -13,12 +16,43 @@ const columns = [
     { name: "ACTIONS", uid: "actions" },
 ];
 
-const Properties = () => {
-    const [searchKey, setSearchKey] = React.useState("");
+const PropertiesContent = () => {
+    const tableId = "properties";
+    const { getTableOptions } = useTableOptions();
+    const tableOptions = getTableOptions(tableId);
+    // const { properties, properties_with_details } = usePage().props;
+    const [propertiesWithDetails, setPropertiesWithDetails] = React.useState(
+        []
+    );
+    const [properties, setProperties] = React.useState({
+        rows: [],
+        total: 0,
+        total_pages: 0,
+    });
 
-    const handleSearchReset = () => {
-        setSearchKey("");
+    const [loadingState, setLoadingState] = React.useState("idle");
+
+    // Function to fetch/update data from third party api
+    const fetchData = () => {
+        setLoadingState("loading");
+        axiosInstance
+            .post(route("properties.get"), tableOptions)
+            .then((response) => {
+                // console.log("response: ", response.data.propertiesWithDetails);
+                setProperties(response.data.properties);
+                setPropertiesWithDetails(response.data.propertiesWithDetails);
+            })
+            .catch((error) => {
+                console.error("Error fetching users:", error);
+            })
+            .finally(() => {
+                setLoadingState("idle"); // Reset loading state after the request
+            });
     };
+
+    React.useEffect(() => {
+        fetchData();
+    }, [tableOptions]);
 
     return (
         <React.Fragment>
@@ -29,18 +63,28 @@ const Properties = () => {
                         <h1 className="text-2xl font-bold">Properties</h1>
                         <p>Manage Your Properties and Generate Receipts</p>
                     </div>
-                    <SearchFilterWidget
-                        handleSearchKey={(key) => setSearchKey(key)}
-                        columns={columns}
-                    />
+
+                    <SearchFilterWidget tableId={tableId} columns={columns} />
                 </div>
                 <PropertyDataTable
+                    tableId={tableId}
+                    tableOptions={tableOptions}
                     columns={columns}
-                    searchKey={searchKey}
-                    resetSearch={() => handleSearchReset()}
+                    data={properties}
+                    isLoading={loadingState}
+                    propertiesWithDetails={propertiesWithDetails}
+                    updateTable={fetchData}
                 />
             </div>
         </React.Fragment>
+    );
+};
+
+const Properties = () => {
+    return (
+        <TableOptionsProvider>
+            <PropertiesContent />
+        </TableOptionsProvider>
     );
 };
 

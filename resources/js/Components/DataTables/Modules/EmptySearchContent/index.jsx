@@ -1,6 +1,6 @@
 import { Button, Image, Spacer } from "@nextui-org/react";
 import React from "react";
-import { url } from "@/utils/helpers";
+import { asset } from "@/Utils/helpers";
 
 const EmptySearchContent = ({ resetTable }) => {
     return (
@@ -9,7 +9,7 @@ const EmptySearchContent = ({ resetTable }) => {
                 <Image
                     width={200}
                     alt="Empty search"
-                    src={url("images/empty_states/empty-search.png")}
+                    src={asset("empty_states/empty-search.png")}
                 />
             </div>
             <Spacer y={5} />

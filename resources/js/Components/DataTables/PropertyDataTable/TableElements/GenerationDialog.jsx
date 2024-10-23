@@ -14,7 +14,7 @@ import {
     decodeHtmlEntities,
     axiosInstance,
     toTitleCase,
-} from "@/utils/helpers";
+} from "@/Utils/helpers";
 import { useTheme } from "@/Contexts/ThemeContext";
 import { CloseIcon } from "@/Components/Alert/icons";
 import { PdfIcon, PrintIcon, SaveIcon, ViewIcon } from "../icons";

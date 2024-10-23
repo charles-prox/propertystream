@@ -28,7 +28,6 @@
  * -------------------------------------------------------------------------------------------------------------------
  */
 import he from "he";
-import axios from "axios";
 
 /**
  * Functions and helper methods used across the application.
@@ -45,27 +44,13 @@ import axios from "axios";
  */
 
 /**
- * Creates an axios instance with default configurations for making HTTP requests.
- *
- * This instance is configured to include credentials (e.g., cookies) with requests
- * and has a default base URL for all requests made using this instance.
- *
- * @type {axios.AxiosInstance} - Configured instance of axios.
- */
-// Create an axios instance with default configurations
-export const axiosInstance = axios.create({
-    baseURL: "/", // Update if you have a different base URL
-    withCredentials: true, // Ensure cookies are sent with requests
-});
-
-/**
  * Generates a URL for displaying images stored in the storage folder that is linked to the public directory.
  *
  * @param {string} path - The relative path of the image within the storage folder.
  * @returns {string} - The full URL to access the image.
  */
 export const asset = (path) => {
-    return `/storage/images/${path}`;
+    return `/images/${path}`;
 };
 
 /**
@@ -126,4 +111,27 @@ export const getCurrentDate = () => {
  */
 export const decodeHtmlEntities = (str) => {
     return he.decode(he.decode(str));
+};
+
+/**
+ * Helper function to generate a Tailwind CSS width class based on the provided maxWidth.
+ *
+ * @param maxWidth - The maximum width value which can be either a number or a string.
+ *
+ * If maxWidth is a number, it generates a Tailwind CSS width class in the format `w-[value]`,
+ * where `value` is the provided number. This allows for dynamic width classes in Tailwind CSS.
+ *
+ * If maxWidth is a string, it is returned as-is. This allows for predefined Tailwind CSS width classes
+ * such as 'w-full', 'w-1/2', etc.
+ *
+ * If no maxWidth is provided, the function returns undefined, which can be interpreted as no width class.
+ *
+ * @returns A string representing the Tailwind width class or undefined if no width is specified.
+ */
+export const getTailwindWidthClass = (maxWidth) => {
+    if (typeof maxWidth === "number") {
+        // Generate Tailwind class for number input
+        return `w-[${maxWidth}]`;
+    }
+    return maxWidth; // Return string as-is or undefined if not provided
 };

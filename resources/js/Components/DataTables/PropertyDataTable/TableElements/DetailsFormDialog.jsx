@@ -11,14 +11,19 @@ import {
 } from "@nextui-org/react";
 import { usePage, useForm } from "@inertiajs/react";
 import { useTheme } from "@/Contexts/ThemeContext";
-import { decodeHtmlEntities } from "@/utils/helpers";
+import { decodeHtmlEntities } from "@/Utils/helpers";
 import { CloseIcon } from "@/Components/Alert/icons";
 import { TVIcon } from "../icons";
 
-const DetailsFormDialog = ({ isOpen, setIsDialogOpen, property }) => {
+const DetailsFormDialog = ({
+    isOpen,
+    setIsDialogOpen,
+    property,
+    properties,
+}) => {
     const { theme } = useTheme();
     // Access the properties and auth data from the page's props
-    const { properties, auth } = usePage().props;
+    const { auth } = usePage().props;
 
     // State to keep track of the property index
     const [propertyIndex, setPropertyIndex] = useState(-1);

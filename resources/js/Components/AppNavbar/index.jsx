@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { usePage, useForm, Link } from "@inertiajs/react";
-import { url } from "@/utils/helpers";
+import { url } from "@/Utils/helpers";
 import {
     Dropdown,
     DropdownTrigger,
@@ -25,7 +25,7 @@ import {
     SunIcon,
     UserIdIcon,
 } from "./icons";
-import { appName } from "@/utils/constants";
+import { appName } from "@/Utils/constants";
 import { useTheme } from "@/Contexts/ThemeContext";
 
 const Logo = () => {

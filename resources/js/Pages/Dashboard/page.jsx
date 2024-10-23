@@ -1,8 +1,8 @@
-import { Head } from "@inertiajs/react";
 import React from "react";
+import { Head } from "@inertiajs/react";
 import { Card, CardHeader, CardFooter, Image, Button } from "@nextui-org/react";
 
-const Dashboard = () => {
+const DashboardPage = () => {
     return (
         <div>
             <Head title="Dashboard" />
@@ -139,4 +139,4 @@ const Dashboard = () => {
     );
 };
 
-export default Dashboard;
+export default DashboardPage;

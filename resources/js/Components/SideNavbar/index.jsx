@@ -4,57 +4,58 @@ import NavItems from "./NavItems";
 import { ArrowRightIcon } from "./icons";
 import { useSideNavState } from "@/Contexts/SideNavStateContext";
 
-const SideNavbar = ({ minSideNavWidth, maxSideNavWidth, animationOptions }) => {
+const SideNavbar = () => {
+    const minSideNavWidth = 16;
+    const maxSideNavWidth = 60;
+    const animationOptions = {
+        delay: 200,
+        duration: 100,
+    };
     const { sideNavState, toggleSideNavState } = useSideNavState();
 
     return (
-        <div
+        <aside
             className={`
-                flex-none 
                 ${
                     sideNavState === "collapse"
                         ? `w-${minSideNavWidth}`
                         : `w-${maxSideNavWidth}`
                 } 
-                rounded-none 
-                p-2 
-                border-default-400/30
-                transition-all 
+                flex-shrink-0
+                transition-width 
                 delay-${animationOptions.delay} 
-                duration-${animationOptions.duration} 
+                duration-${animationOptions.duration}
                 overflow-hidden
-                h-[calc(100vh-4rem)]
-                fixed
-                left-0 top-[4rem]
-                shadow-md
+                p-2 
             `}
         >
-            <div className="flex flex-col justify-between h-full">
-                <div className="text-right">
-                    <Button
-                        size="sm"
-                        radius="lg"
-                        color="primary"
-                        variant="light"
-                        isIconOnly
-                        onClick={toggleSideNavState}
-                    >
-                        <ArrowRightIcon
-                            className={`
+            <div className="text-right">
+                <Button
+                    size="sm"
+                    radius="lg"
+                    color="primary"
+                    variant="light"
+                    isIconOnly
+                    onClick={toggleSideNavState}
+                >
+                    <ArrowRightIcon
+                        className={`
                                 ${sideNavState !== "collapse" && "-rotate-180"} 
                                 transition-all 
                                 transform
                             `}
-                            width={20}
-                            height={20}
-                        />
-                    </Button>
-                </div>
-                <div className="flex-grow">
-                    <NavItems sideNavState={sideNavState} />
-                </div>
+                        width={20}
+                        height={20}
+                    />
+                </Button>
             </div>
-        </div>
+            <nav>
+                <NavItems
+                    sideNavState={sideNavState}
+                    animationOptions={animationOptions}
+                />
+            </nav>
+        </aside>
     );
 };
 

@@ -26,15 +26,16 @@ class UserController extends Controller
      */
     public function search(Request $request)
     {
-        $currentPage = (int)$request->input('current_page') > 0 ? (int)$request->input('current_page') : 1; // 
-        $perPage = (int)$request->input('per_page') > 0 ? (int)$request->input('per_page') : 10; // Number of users per page
-        $sortBy = $request->input('sort_by') ? $request->input('sort_by') : 'id:asc'; // Column to sort by (default to 'id' in ascending order)
-        $searchKey = $request->input('search_key') ? $request->input('search_key') : ''; // Search key
-        $filters = $request->input('filters') ? $request->input('filters') : [];
-        $modelType = (new User())->getMorphClass();
+        $currentPage = max((int)($request->input('current_page') ?? 1), 1);
+        $perPage = max((int)($request->input('per_page') ?? 10), 1);
+        $sortBy = $request->input('sort_by') ?? 'id:asc';
+        $searchKey = $request->input('search_key') ?? '';
+        $filters = $request->input('filters') ?? [];
 
-        $users = DB::selectOne('SELECT * FROM get_paginated_users(?,?,?,?,?,?)', [$currentPage, $perPage, $sortBy, $searchKey, json_encode($filters), $modelType]);
-        $users->rows = json_decode($users->rows, true);
+
+        // $users = DB::selectOne('SELECT * FROM get_paginated_users(?,?,?,?,?,?)', [$currentPage, $perPage, $sortBy, $searchKey, json_encode($filters), $modelType]);
+        // $users->rows = json_decode($users->rows, true);
+        $users = User::getPaginatedUsers($currentPage, $perPage, $sortBy, $searchKey, $filters);
 
         return response()->json($users);
     }
@@ -125,6 +126,37 @@ class UserController extends Controller
 
     public function update(UserRequest $request, $id)
     {
-        dd($request->all());
+        // Find the user by ID
+        $user = User::findOrFail($id);
+
+        // Update the user's attributes
+        $user->hris_id = $request->hris_id;
+        $user->user_id = $request->user_id;
+        $user->first_name = $request->first_name;
+        $user->middle_name = $request->middle_name;
+        $user->last_name = $request->last_name;
+        $user->email = $request->email;
+        $user->position = $request->position;
+        $user->contact_no = $request->contact_no;
+        $user->employment_status = $request->employment_status;
+        $user->office_id = $request->office_id;
+        $user->account_status = $request->account_status;
+
+        // Update the password only if it is provided
+        if ($request->filled('password')) {
+            $user->password = bcrypt($request->password); // Hash the password
+        }
+
+        // Update the user's role
+        if ($request->filled('role')) {
+            // Remove existing roles and assign the new role
+            $user->syncRoles($request->role); // Use syncRoles to update the role
+        }
+
+        // Save the changes to the database
+        $user->save();
+
+        // Redirect or return response
+        return response()->json(['message' => 'User updated successfully']);
     }
 }

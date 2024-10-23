@@ -19,7 +19,7 @@ import {
     UserInfoIcon,
     UserWarningIcon,
 } from "../icons";
-import { decodeHtmlEntities } from "@/utils/helpers";
+import { decodeHtmlEntities } from "@/Utils/helpers";
 import { useTheme } from "@/Contexts/ThemeContext";
 
 const statusColorMap = {
