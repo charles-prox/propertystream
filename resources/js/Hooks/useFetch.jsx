@@ -8,6 +8,7 @@ const useFetch = (url, defaultValue = [], method = "GET", body = null) => {
 
     const fetchData = async () => {
         setLoading(true);
+
         try {
             let response;
             if (method === "POST" && body) {

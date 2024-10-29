@@ -5,7 +5,7 @@ export default function AuthLayout({ children }) {
     const { theme } = useTheme();
     return (
         <main className={`${theme} text-foreground bg-background`}>
-            <div className="min-h-screen flex flex-col sm:justify-center items-center bg-gray-100">
+            <div className="min-h-screen flex flex-col sm:justify-center items-center">
                 {children}
             </div>
         </main>

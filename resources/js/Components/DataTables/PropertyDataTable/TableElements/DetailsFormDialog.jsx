@@ -116,13 +116,13 @@ const DetailsFormDialog = ({
                                         {propertyIndex >= 0 &&
                                             decodeHtmlEntities(
                                                 properties.rows[propertyIndex]
-                                                    .name
+                                                    ?.name
                                             )}
                                     </p>
                                     <p className="px-2 text-sm text-default-500">
                                         {propertyIndex >= 0 &&
                                             properties.rows[propertyIndex]
-                                                .serial}
+                                                ?.serial}
                                     </p>
                                 </div>
                             </div>

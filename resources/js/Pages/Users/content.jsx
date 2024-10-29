@@ -4,7 +4,7 @@ import { Head, router, usePage } from "@inertiajs/react";
 import UsersDataTable from "@/Components/DataTables/UsersDataTable";
 import { Button, Divider } from "@nextui-org/react";
 import { AddIcon } from "@/Components/DataTables/Modules/SearchFilterWidget/icons";
-import { UserManagementForm } from "@/Components/Forms/UserManagementForm";
+import { UserManagementForm } from "./form";
 import { SaveIcon } from "@/Components/Forms/icons";
 import { toTitleCase } from "@/Utils/helpers";
 import { axiosInstance } from "@/Utils/axios";
@@ -43,13 +43,9 @@ const UsersContent = () => {
     });
 
     const [onSubmit, setOnSubmit] = React.useState(false);
-    // const [loadingState, setLoadingState] = React.useState(false);
-    const { action, result, user } = usePage().props;
-    // const [users, setUsers] = React.useState({
-    //     rows: [],
-    //     total_users: 0,
-    //     total_pages: 0,
-    // });
+    const { action, user, session } = usePage().props;
+    const [isSaving, setIsSaving] = React.useState(false);
+
     const {
         data: users,
         loading: loadingState,
@@ -67,7 +63,6 @@ const UsersContent = () => {
     );
 
     const onEdit = (user) => {
-        console.log("onEdit: ", user);
         router.get(route("users.edit", user));
     };
 
@@ -75,7 +70,6 @@ const UsersContent = () => {
         axiosInstance
             .delete(route("users.destroy", user))
             .then((response) => {
-                // console.log("User deleted:", response.data);
                 setAlertOptions({
                     isOpen: true,
                     type: "success",
@@ -90,28 +84,29 @@ const UsersContent = () => {
     };
 
     React.useEffect(() => {
-        if (result === "success") {
-            if (action === "create") {
-                setAlertOptions({
-                    isOpen: true,
-                    type: "success",
-                    title: "User Created",
-                    message: "The user has been successfully created.",
-                });
-            }
-            if (action === "edit") {
-                setAlertOptions({
-                    isOpen: true,
-                    type: "success",
-                    title: "User Updated",
-                    message: "The user has been successfully updated.",
-                });
+        if (session.form) {
+            if (session.form.result === "success") {
+                if (action === "create") {
+                    setAlertOptions({
+                        isOpen: true,
+                        type: "success",
+                        title: "User Created",
+                        message: "The user has been successfully created.",
+                    });
+                }
+                if (action === "edit") {
+                    setAlertOptions({
+                        isOpen: true,
+                        type: "success",
+                        title: "User Updated",
+                        message: "The user has been successfully updated.",
+                    });
+                }
             }
         }
-    }, [result]);
+    }, [session]);
 
     React.useEffect(() => {
-        refetch();
         if (action !== "edit" && action !== "create") {
             refetch();
         }
@@ -122,9 +117,10 @@ const UsersContent = () => {
             <Head title="Users" />
             <ModalAlert
                 isOpen={alertOptions.isOpen}
-                setIsAlertOpen={(state) =>
-                    setAlertOptions({ ...alertOptions, isOpen: state })
-                }
+                setIsAlertOpen={(state) => {
+                    setAlertOptions({ ...alertOptions, isOpen: state });
+                    setOnSubmit(false);
+                }}
                 type={alertOptions.type}
                 title={alertOptions.title}
                 message={alertOptions.message}
@@ -138,7 +134,7 @@ const UsersContent = () => {
                         }User${action ? "" : "s"}`}</h1>
                         <p>
                             {action === "create"
-                                ? "Complete the Form Below to Create a User"
+                                ? "Complete the form below to create a user"
                                 : action === "edit"
                                 ? "Update the User's Account Information"
                                 : "Manage User Profiles and Access"}
@@ -165,7 +161,7 @@ const UsersContent = () => {
                                     onPress={() => {
                                         setOnSubmit(true);
                                     }}
-                                    isLoading={loadingState}
+                                    isLoading={isSaving}
                                 >
                                     Save user
                                 </Button>
@@ -202,8 +198,9 @@ const UsersContent = () => {
                 {action === "create" || action === "edit" ? (
                     <UserManagementForm
                         onSubmit={onSubmit}
+                        onFormSubmitComplete={() => setOnSubmit(false)}
                         user={user}
-                        isSubmitting={(state) => setLoadingState(state)}
+                        isSubmitting={(state) => setIsSaving(state)}
                     />
                 ) : (
                     <UsersDataTable

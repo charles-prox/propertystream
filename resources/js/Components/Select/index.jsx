@@ -5,10 +5,11 @@ import {
     Autocomplete,
     AutocompleteItem,
 } from "@nextui-org/react";
-import { getTailwindWidthClass } from "@/Utils/helpers";
+import { getTailwindWidthClass, toTitleCase } from "@/Utils/helpers";
 
 const Select = ({
     selectedKeys,
+    selectionMode = "single",
     startContent,
     endContent,
     isRequired,
@@ -36,6 +37,7 @@ const Select = ({
                     name={name}
                     id={name}
                     defaultItems={items}
+                    defaultSelectedKey={selectedKeys}
                     label={label}
                     labelPlacement={labelPlacement}
                     placeholder={placeholder}
@@ -71,7 +73,9 @@ const Select = ({
                 <NextuiSelect
                     label={label}
                     variant="bordered"
+                    selectionMode={selectionMode}
                     placeholder={placeholder}
+                    labelPlacement={labelPlacement}
                     selectedKeys={selectedKeys}
                     onSelectionChange={onSelectionChange} // Use onChange here
                     isRequired={isRequired} // Add required prop if needed
@@ -92,7 +96,7 @@ const Select = ({
                             key={item[keyField]}
                             value={item[valueField]}
                         >
-                            {item[labelField]}
+                            {toTitleCase(item[labelField])}
                         </SelectItem>
                     ))}
                 </NextuiSelect>

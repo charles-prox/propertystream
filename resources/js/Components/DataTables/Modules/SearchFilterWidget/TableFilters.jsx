@@ -16,7 +16,7 @@ import { useTableOptions } from "@/Contexts/TableOptionsContext";
 const TableFilters = ({ tableId, columns }) => {
     const { getTableOptions, updateTableOptions } = useTableOptions();
     const tableOptions = getTableOptions(tableId);
-    const [filters, setFilters] = useState(null);
+    const [filters, setFilters] = useState([]);
     const [errors, setErrors] = useState([]);
     const { theme } = useTheme();
 
@@ -24,18 +24,16 @@ const TableFilters = ({ tableId, columns }) => {
         if (Array.isArray(tableOptions.filters)) {
             setFilters(tableOptions.filters);
         } else {
-            setFilters(null);
+            setFilters([]);
         }
     }, [tableOptions.filters]);
 
-    // Keep useCallback here as it depends on `columns` which might change
     const handleColumnChange = useCallback(
         (index, newValue) => {
             setFilters((prevFilters) => {
                 const newFilters = [...prevFilters];
                 const column = columns.find((col) => col.uid === newValue);
 
-                // Check if column is defined before accessing its properties
                 if (column) {
                     newFilters[index] = {
                         uid: column.uid,
@@ -44,7 +42,6 @@ const TableFilters = ({ tableId, columns }) => {
                         value: newFilters[index]?.value || "",
                     };
                 } else {
-                    // If column is not found, reset the filter at this index
                     newFilters[index] = {
                         uid: "",
                         name: "",
@@ -58,7 +55,6 @@ const TableFilters = ({ tableId, columns }) => {
         [columns]
     );
 
-    // These simple functions don't need useCallback
     const handleValueChange = (index, newValue) => {
         setFilters((prevFilters) => {
             const newFilters = [...prevFilters];
@@ -68,48 +64,41 @@ const TableFilters = ({ tableId, columns }) => {
     };
 
     const addFilters = () => {
-        if (filters) {
-            setFilters((prevFilters) => [
-                ...prevFilters,
-                { uid: "", name: "", dbColumn: [], value: "" },
-            ]);
-        } else {
-            setFilters([{ uid: "", name: "", dbColumn: [], value: "" }]);
-        }
+        setFilters((prevFilters) => [
+            ...prevFilters,
+            { uid: "", name: "", dbColumn: [], value: "" },
+        ]);
     };
 
     const removeFilter = (index) => {
         setFilters((prevFilters) => {
             const newFilters = prevFilters.filter((_, i) => i !== index);
-            // Set filters to null if the last filter is removed
-            return newFilters.length === 0 ? null : newFilters;
+            updateTableOptions(tableId, {
+                filters: newFilters,
+                current_page: "1",
+            });
+            return newFilters;
         });
     };
 
-    // Keep useCallback for functions that use props or context values
     const removeAllFilter = useCallback(() => {
-        setFilters(null);
-        updateTableOptions(tableId, { filters: null });
-    }, [tableId, updateTableOptions]);
+        setFilters([]);
+        setErrors([]);
+        updateTableOptions(tableId, { filters: [], current_page: "1" });
+    }, []);
 
     const applyFilters = useCallback(() => {
         const validFilters = filters.filter(
-            (filter) => filter.uid && filter.value
+            (filter) =>
+                (filter.uid && filter.value) || Array.isArray(filter.value)
         );
+
+        // Only update table options when applying filters
         updateTableOptions(tableId, {
             filters: validFilters,
             current_page: "1",
         });
     }, [filters, tableId, updateTableOptions]);
-
-    // Force update filters when filter is empty
-    useEffect(() => {
-        if (filters) {
-            if (filters.length === 0 && tableOptions.filters !== null) {
-                updateTableOptions(tableId, { filters: null });
-            }
-        }
-    }, [filters, tableId, updateTableOptions, tableOptions.filters]);
 
     return (
         <div>
@@ -119,11 +108,11 @@ const TableFilters = ({ tableId, columns }) => {
                 className={`${theme} text-foreground`}
             >
                 <Badge
-                    content={filters && filters.length}
+                    content={filters.length}
                     size="lg"
                     color="warning"
                     placement="top-left"
-                    isInvisible={filters ? filters.length <= 0 : true}
+                    isInvisible={filters.length <= 0}
                 >
                     <PopoverTrigger>
                         <Button color="primary" isIconOnly>
@@ -133,7 +122,7 @@ const TableFilters = ({ tableId, columns }) => {
                 </Badge>
                 <PopoverContent>
                     <div className="py-4 px-3 flex flex-col gap-3 items-center ">
-                        {!filters ? (
+                        {filters.length === 0 ? (
                             <div className="flex flex-col gap-3 items-center w-80">
                                 <p>No existing filters yet.</p>
                                 <Button
@@ -154,112 +143,96 @@ const TableFilters = ({ tableId, columns }) => {
                         ) : (
                             <>
                                 <div className="flex flex-col gap-3 items-center ">
-                                    {filters &&
-                                        filters.map((filter, index) => {
-                                            const selectedKeys = filters.map(
-                                                (f) => f.uid
-                                            ); // Get all selected keys
-                                            return (
-                                                <div
-                                                    key={index}
-                                                    className="flex items-start gap-2 "
-                                                >
-                                                    <Autocomplete
-                                                        key={`column-${index}`}
-                                                        id={`column-${index}`}
-                                                        name={`column-${index}`}
-                                                        aria-labelledby="Column to filter"
-                                                        placeholder="Column"
-                                                        size="sm"
-                                                        defaultItems={columns}
-                                                        disabledKeys={[
-                                                            "actions",
-                                                            ...selectedKeys,
-                                                        ]} // Disable selected keys
-                                                        defaultSelectedKey={
-                                                            filter.uid
-                                                                ? filter.uid
-                                                                : null
-                                                        }
-                                                        selectedKeys={
-                                                            filter.uid
-                                                                ? filter.uid
-                                                                : null
-                                                        }
-                                                        menuTrigger="input"
-                                                        isInvalid={
-                                                            errors[index]
-                                                                ? errors[index]
-                                                                      .column
-                                                                : false
-                                                        }
-                                                        errorMessage={
-                                                            errors[index] &&
-                                                            "You can't leave this field empty."
-                                                        }
-                                                        onSelectionChange={(
+                                    {filters.map((filter, index) => {
+                                        const selectedKeys = filters.map(
+                                            (f) => f.uid
+                                        );
+                                        return (
+                                            <div
+                                                key={index}
+                                                className="flex items-start gap-2 "
+                                            >
+                                                <Autocomplete
+                                                    aria-label="column"
+                                                    id={`column-${index}`}
+                                                    name={`column-${index}`}
+                                                    placeholder="Column"
+                                                    size="sm"
+                                                    defaultItems={columns}
+                                                    disabledKeys={[
+                                                        "actions",
+                                                        ...selectedKeys,
+                                                    ]}
+                                                    defaultSelectedKey={
+                                                        filter.uid || null
+                                                    }
+                                                    selectedKeys={
+                                                        filter.uid || null
+                                                    }
+                                                    menuTrigger="input"
+                                                    isInvalid={
+                                                        errors[index]?.column
+                                                    }
+                                                    errorMessage={
+                                                        errors[index]?.column &&
+                                                        "You can't leave this field empty."
+                                                    }
+                                                    onSelectionChange={(
+                                                        selectedKey
+                                                    ) => {
+                                                        handleColumnChange(
+                                                            index,
                                                             selectedKey
-                                                        ) => {
-                                                            handleColumnChange(
-                                                                index,
-                                                                selectedKey
-                                                            );
-                                                        }}
-                                                        color="default"
-                                                    >
-                                                        {(item) =>
-                                                            item.uid !==
-                                                                "actions" && (
-                                                                <AutocompleteItem
-                                                                    key={
-                                                                        item.uid
-                                                                    }
-                                                                    value={
-                                                                        item.uid
-                                                                    }
-                                                                >
-                                                                    {item.name}
-                                                                </AutocompleteItem>
-                                                            )
-                                                        }
-                                                    </Autocomplete>
-                                                    <Input
-                                                        id={`filter-value-${index}`}
-                                                        name={`filter-value-${index}`}
-                                                        placeholder="Value"
-                                                        size="sm"
-                                                        value={filter.value}
-                                                        isInvalid={
-                                                            errors[index]
-                                                                ? errors[index]
-                                                                      .value
-                                                                : false
-                                                        }
-                                                        errorMessage={
-                                                            errors[index] &&
-                                                            "You can't leave this field empty."
-                                                        }
-                                                        onChange={(e) =>
-                                                            handleValueChange(
-                                                                index,
-                                                                e.target.value
-                                                            )
-                                                        }
-                                                    />
-                                                    <Button
-                                                        isIconOnly
-                                                        color="danger"
-                                                        size="sm"
-                                                        onClick={() =>
-                                                            removeFilter(index)
-                                                        }
-                                                        variant="flat"
-                                                    >
-                                                        <DeleteIcon />
-                                                    </Button>
-                                                </div>
-                                            );
-                                        })}
+                                                        );
+                                                    }}
+                                                >
+                                                    {(item) =>
+                                                        item.uid !==
+                                                            "actions" && (
+                                                            <AutocompleteItem
+                                                                key={item.uid}
+                                                                value={item.uid}
+                                                            >
+                                                                {item.name}
+                                                            </AutocompleteItem>
+                                                        )
+                                                    }
+                                                </Autocomplete>
+                                                <Input
+                                                    aria-label="value"
+                                                    id={`filter-value-${index}`}
+                                                    name={`filter-value-${index}`}
+                                                    placeholder="Value"
+                                                    size="sm"
+                                                    value={filter.value}
+                                                    isInvalid={
+                                                        errors[index]?.value
+                                                    }
+                                                    errorMessage={
+                                                        errors[index]?.value &&
+                                                        "You can't leave this field empty."
+                                                    }
+                                                    onChange={(e) =>
+                                                        handleValueChange(
+                                                            index,
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                />
+                                                <Button
+                                                    isIconOnly
+                                                    color="danger"
+                                                    size="sm"
+                                                    onClick={() =>
+                                                        removeFilter(index)
+                                                    }
+                                                    variant="flat"
+                                                >
+                                                    <DeleteIcon />
+                                                </Button>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                                 <Spacer y={1} />
                                 <div className="flex gap-3 justify-between w-full">

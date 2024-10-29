@@ -36,6 +36,7 @@ class PropertyController extends Controller
         if ($request->filled("order_by") && !empty($request->input("order_by"))) {
             $url .= '&' . 'order=' . $request->input("order_by");
         }
+        // dd($url);
 
         $properties = Http::withHeaders([
             'Authorization' => 'Bearer ' . config('snipeit.token'),
@@ -118,6 +119,7 @@ class PropertyController extends Controller
             // ]);
             // dd($propertiesWithDetails);
             return response()->json([
+                'url' => $url,
                 'properties' => $propertiesJson,
                 'propertiesWithDetails' => $propertiesWithDetails,
             ]);

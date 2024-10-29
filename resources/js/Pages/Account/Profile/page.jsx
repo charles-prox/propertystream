@@ -5,7 +5,7 @@ import { Head } from "@inertiajs/react";
 import { Button, Spacer } from "@nextui-org/react";
 import React from "react";
 
-const Profile = () => {
+const ProfilePage = () => {
     const [enableEdit, setEnableEdit] = React.useState(false);
     const [onSubmit, setOnSubmit] = React.useState(false);
     const [loading, setLoading] = React.useState(false);
@@ -70,4 +70,4 @@ const Profile = () => {
     );
 };
 
-export default Profile;
+export default ProfilePage;

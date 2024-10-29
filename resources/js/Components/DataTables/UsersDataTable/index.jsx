@@ -278,7 +278,11 @@ const UsersDataTable = ({
                 emptyContent={
                     <EmptySearchContent
                         resetTable={() =>
-                            updateTableOptions(tableId, { search_key: "" })
+                            updateTableOptions(tableId, {
+                                search_key: "",
+                                current_page: "1",
+                                filters: [],
+                            })
                         }
                     />
                 }

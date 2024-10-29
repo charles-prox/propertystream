@@ -12,6 +12,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Hash;
 
 class User extends Authenticatable
 {
@@ -75,6 +76,21 @@ class User extends Authenticatable
         ];
     }
 
+    /**
+     * Retrieve a paginated list of users with optional sorting, searching, and filtering.
+     *
+     * This static method allows for fetching users in a paginated format, enabling the caller
+     * to specify the current page, number of users per page, sorting criteria, search keyword,
+     * and additional filters. The results will be returned in a format suitable for display 
+     * in a paginated view.
+     *
+     * @param int $currentPage The page number to retrieve (default is 1).
+     * @param int $perPage The number of users to display per page (default is 10).
+     * @param string $sortBy The sorting criteria, formatted as 'column:direction' (default is 'first_name:asc').
+     * @param string $searchKey A search keyword to filter users by name or other searchable fields (default is an empty string).
+     * @param array $filters An associative array of additional filters to apply when retrieving users (default is an empty array).
+     * @return \Illuminate\Pagination\LengthAwarePaginator Returns a paginator instance containing the users for the specified page.
+     */
     public static function getPaginatedUsers(
         int $currentPage = 1,
         int $perPage = 10,
@@ -157,19 +173,5 @@ class User extends Authenticatable
     public function office(): BelongsTo
     {
         return $this->belongsTo(Office::class, 'office_id');
-    }
-
-    /**
-     * Get the default profile photo URL if no profile photo has been uploaded.
-     *
-     * @return string
-     */
-    protected function defaultProfilePhotoUrl()
-    {
-        $name = trim(collect(explode(' ', $this->first_name . ' ' . $this->last_name))->map(function ($segment) {
-            return mb_substr($segment, 0, 1);
-        })->join(' '));
-
-        return 'https://ui-avatars.com/api/?name=' . urlencode($name) . '&color=7F9CF5&background=EBF4FF&format=svg';
     }
 }

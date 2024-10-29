@@ -99,6 +99,10 @@ const PropertyDataTable = ({
         });
     };
 
+    const handleResetTable = () => {
+        updateTableOptions(tableId, { search_key: "", current_page: "1" });
+    };
+
     // Handle row selection
     const handleSelection = (keys) => {
         setCurrentProperty(keys);
@@ -370,7 +374,7 @@ const PropertyDataTable = ({
                 <TableBody
                     items={properties.rows}
                     loadingContent={<Spinner />}
-                    loadingState={isLoading}
+                    loadingState={isLoading ? "loading" : "idle"}
                     emptyContent={
                         <EmptySearchContent
                             resetTable={() => handleResetTable()}

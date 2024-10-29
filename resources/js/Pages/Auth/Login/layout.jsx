@@ -9,9 +9,7 @@ const LoginLayout = ({ children }) => {
     return (
         <>
             <Head title="Login" />
-            <Card
-                className={`w-full px-6 py-4 bg-white overflow-hidden sm:max-w-md`}
-            >
+            <Card className={`w-full px-6 py-4 overflow-hidden sm:max-w-md`}>
                 <CardHeader className="block gap-2">
                     <div className="flex items-center justify-center mb-5 sm:mb-2">
                         <Image

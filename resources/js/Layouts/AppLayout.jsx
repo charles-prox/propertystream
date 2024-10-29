@@ -16,7 +16,7 @@ const AppLayout = ({ children }) => {
                 <AppNavbar />
 
                 {/* Main Content */}
-                <div className="flex">
+                <div className="flex overflow-auto">
                     {/* Sidebar */}
                     <Sidebar />
 

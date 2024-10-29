@@ -6,7 +6,7 @@ const defaultOptions = {
     per_page: "10",
     sort_by: "id:asc",
     search_key: "",
-    filters: null,
+    filters: [],
 };
 
 export const TableOptionsProvider = ({ children }) => {

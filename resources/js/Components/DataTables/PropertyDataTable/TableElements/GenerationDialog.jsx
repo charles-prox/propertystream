@@ -10,11 +10,8 @@ import {
     Divider,
 } from "@nextui-org/react";
 import { PDFDownloadLink, BlobProvider } from "@react-pdf/renderer";
-import {
-    decodeHtmlEntities,
-    axiosInstance,
-    toTitleCase,
-} from "@/Utils/helpers";
+import { decodeHtmlEntities, toTitleCase } from "@/Utils/helpers";
+import { axiosInstance } from "@/Utils/axios";
 import { useTheme } from "@/Contexts/ThemeContext";
 import { CloseIcon } from "@/Components/Alert/icons";
 import { PdfIcon, PrintIcon, SaveIcon, ViewIcon } from "../icons";

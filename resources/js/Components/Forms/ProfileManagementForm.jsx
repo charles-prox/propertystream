@@ -551,7 +551,7 @@ export const ProfileManagementForm = ({
                                                 label="Office"
                                                 labelPlacement="outside"
                                                 value={
-                                                    offices.find(
+                                                    offices?.find(
                                                         (office) =>
                                                             office.id ===
                                                             data.office_id

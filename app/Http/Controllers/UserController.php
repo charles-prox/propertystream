@@ -3,13 +3,13 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use App\Models\User;
 use App\Models\Office;
-use App\Http\Requests\UserRequest;
 use Spatie\Permission\Models\Role;
 use Illuminate\Database\QueryException;
+use App\Actions\Fortify\CreateNewUser;
+use App\Actions\Fortify\UpdateUserProfileInformation;
 
 class UserController extends Controller
 {
@@ -63,50 +63,34 @@ class UserController extends Controller
         ]);
     }
 
-    public function store(UserRequest $request)
+    public function store(Request $request)
     {
         try {
-            // Create a new user instance using mass assignment
-            $user = User::create([
-                'hris_id' => $request->hris_id,
-                'user_id' => $request->user_id,
-                'first_name' => $request->first_name,
-                'middle_name' => $request->middle_name,
-                'last_name' => $request->last_name,
-                'email' => $request->email,
-                'position' => $request->position,
-                'contact_no' => $request->contact_no,
-                'employment_status' => $request->employment_status,
-                'office_id' => $request->office_id,
-                'password' => bcrypt($request->password), // Hash the password
-            ])->assignRole($request->role);
+            // Create a new user using Fortify's CreateNewUser action
+            $register = new CreateNewUser();
+            $user = $register->create($request->all());
+
+            // Assign role if provided
+            if ($request->has('role')) {
+                $user->assignRole($request->role);
+            }
 
             // Redirect or return response
             if ($user->id) {
-                return Inertia::render('Users', [
+                return back()->with('form', [
                     'result' => 'success',
-                    'action' => 'create', // No user data for creating a new user
-                    'offices' => Office::all(),
-                    'roles' => Role::where('name', '!=', 'super-admin')->get(),
                 ]);
             }
         } catch (QueryException $e) {
-            // Handle database errors
-            return Inertia::render('Users', [
+            return back()->with('form', [
                 'errors' => $e->getMessage(),
-                'action' => 'create', // No user data for creating a new user
-                'offices' => Office::all(),
-                'roles' => Role::where('name', '!=', 'super-admin')->get(),
             ]);
         } catch (\Exception $e) {
             // Handle other exceptions
-            return Inertia::render('Users', [
+            return back()->with('form', [
+                'result' => 'error',
                 'errors' => $e->getMessage(),
-                'action' => 'create', // No user data for creating a new user
-                'offices' => Office::all(),
-                'roles' => Role::where('name', '!=', 'super-admin')->get(),
             ]);
-            return redirect()->back()->withErrors(['error' => 'An error occurred: ' . $e->getMessage()])->withInput();
         }
     }
 
@@ -124,39 +108,25 @@ class UserController extends Controller
         }
     }
 
-    public function update(UserRequest $request, $id)
+    public function update(Request $request, $id)
     {
-        // Find the user by ID
-        $user = User::findOrFail($id);
+        try {
+            // Find user by ID
+            $user = User::findOrFail($id);
 
-        // Update the user's attributes
-        $user->hris_id = $request->hris_id;
-        $user->user_id = $request->user_id;
-        $user->first_name = $request->first_name;
-        $user->middle_name = $request->middle_name;
-        $user->last_name = $request->last_name;
-        $user->email = $request->email;
-        $user->position = $request->position;
-        $user->contact_no = $request->contact_no;
-        $user->employment_status = $request->employment_status;
-        $user->office_id = $request->office_id;
-        $user->account_status = $request->account_status;
+            // Use Fortify's UpdateUserProfileInformation action
+            $updateProfileAction = new UpdateUserProfileInformation();
+            $updateProfileAction->update($user, $request->all());
 
-        // Update the password only if it is provided
-        if ($request->filled('password')) {
-            $user->password = bcrypt($request->password); // Hash the password
+            return back()->with('form', [
+                'result' => 'success',
+            ]);
+        } catch (\Exception $e) {
+            // Handle errors
+            return back()->with('form', [
+                'result' => 'error',
+                'errors' => $e->getMessage(),
+            ]);
         }
-
-        // Update the user's role
-        if ($request->filled('role')) {
-            // Remove existing roles and assign the new role
-            $user->syncRoles($request->role); // Use syncRoles to update the role
-        }
-
-        // Save the changes to the database
-        $user->save();
-
-        // Redirect or return response
-        return response()->json(['message' => 'User updated successfully']);
     }
 }

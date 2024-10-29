@@ -35,3 +35,18 @@ export const employmentStatus = [
         value: "contractual",
     },
 ];
+
+export const userStatus = [
+    {
+        key: "active",
+        label: "Active",
+    },
+    {
+        key: "inactive",
+        label: "Inactive",
+    },
+    {
+        key: "pending",
+        label: "Pending",
+    },
+];
