@@ -280,7 +280,7 @@ export const UserManagementForm = ({
                                             placeholder="Current employment status"
                                             selectedKeys={
                                                 data.employment_status ||
-                                                user.employment_status
+                                                user?.employment_status
                                             }
                                             items={employmentStatus}
                                             keyField={"value"}

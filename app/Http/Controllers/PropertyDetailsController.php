@@ -2,24 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PropertyDetails;
 use App\Http\Requests\PropertyDetailsRequest;
+use App\Models\PropertyDetails;
 use Illuminate\Http\Request;
+use App\Traits\PropertyReceiptTrait;
 
 class PropertyDetailsController extends Controller
 {
+    use PropertyReceiptTrait;
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
-        // Validate the incoming request
-        $validated = $request->validate([
-            'selected' => 'required|array',
-            'selected.*' => 'exists:property_details,property_id', // Make sure to validate each ID
-        ]);
-
-        $propertyDetails = PropertyDetails::whereIn('property_id', $validated['selected'])->get();
+        $propertyDetails = $this->storeReceipt($request);
 
         return response()->json($propertyDetails);
     }

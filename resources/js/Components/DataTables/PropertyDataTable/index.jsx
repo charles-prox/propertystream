@@ -20,6 +20,7 @@ import { PdfIcon } from "./icons";
 import { useTableOptions } from "@/Contexts/TableOptionsContext";
 import { Pagination } from "../Modules/Pagination";
 import ModalAlert from "@/Components/ModalAlert";
+import { usePage } from "@inertiajs/react";
 
 // Mapping status labels to color codes for displaying in the table
 const statusColorMap = {
@@ -40,6 +41,8 @@ const PropertyDataTable = ({
     updateTable,
 }) => {
     const { updateTableOptions } = useTableOptions();
+    const { auth } = usePage().props;
+    const cost_threshold = 50000;
 
     // Load selected property keys from session storage on component mount
     const selectedProperties = JSON.parse(
@@ -110,13 +113,23 @@ const PropertyDataTable = ({
         if (disabledKeys.includes(keys.currentKey)) {
             setIsAlertOpen(true);
         } else {
-            if (
+            const keysArray = Array.from(keys);
+
+            // Find the selected property
+            const selectedProperty = properties.rows.find(
+                (row) => row.id === parseInt(keys.currentKey)
+            );
+
+            if (selectedProperty && !selectedProperty?.purchase_cost) {
+                setIsAlertOpen(true);
+            } else if (
                 keys.currentKey &&
                 !properties_with_details.includes(keys.currentKey)
             ) {
                 setIsDialogFormOpen(true);
             } else {
-                const keysArray = Array.from(keys);
+                const receiptType =
+                    selectedProperty?.purchase_cost > 50000 ? "par" : "ics";
 
                 setSelectedKeys((selectedKeys) => ({
                     ...selectedKeys,
@@ -125,10 +138,10 @@ const PropertyDataTable = ({
                         keys.currentKey !== undefined
                             ? [
                                   ...selectedKeys.details,
-                                  properties.rows.find(
-                                      (row) =>
-                                          row.id === parseInt(keys.currentKey)
-                                  ),
+                                  {
+                                      ...selectedProperty,
+                                      receipt_type: receiptType,
+                                  },
                               ]
                             : [
                                   ...selectedKeys.details.filter((detail) =>
@@ -145,16 +158,20 @@ const PropertyDataTable = ({
         if (key) {
             const keysArray = Array.from(key);
             setIsDialogFormOpen(state);
+            const receiptType =
+                selectedProperty?.purchase_cost > 50000 ? "par" : "ics";
+
             setSelectedKeys((selectedKeys) => ({
                 ...selectedKeys,
-                keys: key,
+                keys: keys,
                 details:
-                    key.currentKey !== undefined
+                    keys.currentKey !== undefined
                         ? [
                               ...selectedKeys.details,
-                              properties.rows.find(
-                                  (row) => row.id === parseInt(key.currentKey)
-                              ),
+                              {
+                                  ...selectedProperty,
+                                  receipt_type: receiptType,
+                              },
                           ]
                         : [
                               ...selectedKeys.details.filter((detail) =>
@@ -401,10 +418,11 @@ const PropertyDataTable = ({
                 type={"warning"}
                 message={
                     <p className="text-default-500 text-sm">
-                        We are unable to generate a
-                        <span className="font-bold"> PAR</span> or
-                        <span className="font-bold"> ICS</span> for a property
-                        that has not been deployed.
+                        A<span className="font-bold"> PAR</span> or
+                        <span className="font-bold"> ICS</span> cannot be
+                        generated for a property that has not been deployed or
+                        lacks a purchase cost. Property details must be updated
+                        to proceed.
                     </p>
                 }
             />
@@ -417,6 +435,7 @@ const PropertyDataTable = ({
                     keys: Array.from(selectedKeys.keys),
                     details: selectedKeys.details,
                 }}
+                user={auth.user}
             />
             {/* This component is a form to add required details to each property before generating the form*/}
             <DetailsFormDialog

@@ -32,7 +32,12 @@ const columns = [
 const UsersContent = () => {
     const tableId = "users";
     const { getTableOptions } = useTableOptions();
-    const tableOptions = getTableOptions(tableId);
+    // const tableOptions = getTableOptions(tableId);
+    // Memoize the result of getTableOptions to avoid changes on every render
+    const tableOptions = React.useMemo(
+        () => getTableOptions(tableId),
+        [getTableOptions, tableId]
+    );
 
     const [alertOptions, setAlertOptions] = React.useState({
         isOpen: false,

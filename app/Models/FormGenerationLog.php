@@ -5,9 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class PropertyReceipt extends Model
+class FormGenerationLog extends Model
 {
-    // use HasFactory;
+    use HasFactory;
 
     /**
      * The attributes that are mass assignable.
@@ -15,9 +15,9 @@ class PropertyReceipt extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'reference_number',
+        'property_receipt_id',
         'user_id',
-        'property_number',
-        'issued_at',
+        'user_ip',
+        'device',
     ];
 }

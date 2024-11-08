@@ -16,7 +16,7 @@ import {
 
 const PropertyAcknowledgementReceipt = ({ formData }) => {
     return (
-        <Document title="PAR-1881-0224">
+        <Document title={formData[0]?.form_number}>
             {formData.map((data, index) => {
                 return (
                     <Page key={index} size="A4" style={styles.page}>
@@ -39,7 +39,14 @@ const PropertyAcknowledgementReceipt = ({ formData }) => {
                                         PhilHealth Regional Office 10
                                     </Text>
                                     <Text style={styles.par_no}>
-                                        PAR No. 1881-0224
+                                        PAR No.:{" "}
+                                        <Text
+                                            style={{
+                                                textDecoration: "underline",
+                                            }}
+                                        >
+                                            {data.form_number}
+                                        </Text>
                                     </Text>
                                 </View>
                             </View>
@@ -159,7 +166,15 @@ const PropertyAcknowledgementReceipt = ({ formData }) => {
                                             >
                                                 Amount :
                                             </Text>
-                                            <Text>Php{data.purchase_cost}</Text>
+                                            <Text>
+                                                Php{" "}
+                                                {parseFloat(data.purchase_cost)
+                                                    .toFixed(2)
+                                                    .replace(
+                                                        /\B(?=(\d{3})+(?!\d))/g,
+                                                        ","
+                                                    )}
+                                            </Text>
                                         </View>
                                     )}
                                     {data.purchase_date && (
