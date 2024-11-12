@@ -8,7 +8,15 @@ import {
     WarningIcon,
 } from "./icons";
 
-const Alert = ({ title, type, variant, message, isCloseable = true }) => {
+const Alert = ({
+    title,
+    type,
+    variant,
+    message,
+    isCloseable = true,
+    iconSize,
+    onClose,
+}) => {
     const [show, setShow] = useState(true);
     const [isClosing, setIsClosing] = useState(false); // Track closing state for transition
 
@@ -16,6 +24,7 @@ const Alert = ({ title, type, variant, message, isCloseable = true }) => {
     const handleClose = () => {
         setIsClosing(true); // Trigger closing animation
         setTimeout(() => setShow(false), 300); // Hide after animation duration
+        onClose();
     };
 
     useEffect(() => {
@@ -27,12 +36,12 @@ const Alert = ({ title, type, variant, message, isCloseable = true }) => {
 
     const startContent = (type) => {
         // Changes icon in alert component depending on type
-        if (type === "error") return <DangerIcon />;
-        if (type === "warning") return <WarningIcon />;
-        if (type === "info") return <InfoIcon />;
-        if (type === "success") return <SuccessIcon />;
+        if (type === "error") return <DangerIcon size={iconSize} />;
+        if (type === "warning") return <WarningIcon size={iconSize} />;
+        if (type === "info") return <InfoIcon size={iconSize} />;
+        if (type === "success") return <SuccessIcon size={iconSize} />;
 
-        return <SuccessIcon />;
+        return <SuccessIcon size={iconSize} />;
     };
 
     const classes = () => {

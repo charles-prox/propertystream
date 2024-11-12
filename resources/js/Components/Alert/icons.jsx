@@ -1,9 +1,9 @@
 import React from "react";
-export const CloseIcon = () => {
+export const CloseIcon = ({ size }) => {
     return (
         <svg
-            width="20px"
-            height="20px"
+            width={size || "20px"}
+            height={size || "20px"}
             viewBox="0 -0.5 25 25"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
@@ -17,11 +17,11 @@ export const CloseIcon = () => {
     );
 };
 
-export const DangerIcon = () => {
+export const DangerIcon = ({ size }) => {
     return (
         <svg
-            width="40px"
-            height="40px"
+            width={size || "40px"}
+            height={size || "40px"}
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
@@ -44,11 +44,11 @@ export const DangerIcon = () => {
     );
 };
 
-export const InfoIcon = () => {
+export const InfoIcon = ({ size }) => {
     return (
         <svg
-            width="40px"
-            height="40px"
+            width={size || "40px"}
+            height={size || "40px"}
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
@@ -71,11 +71,11 @@ export const InfoIcon = () => {
     );
 };
 
-export const SuccessIcon = () => {
+export const SuccessIcon = ({ size }) => {
     return (
         <svg
-            width="40px"
-            height="40px"
+            width={size || "40px"}
+            height={size || "40px"}
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
@@ -94,11 +94,11 @@ export const SuccessIcon = () => {
     );
 };
 
-export const WarningIcon = () => {
+export const WarningIcon = ({ size }) => {
     return (
         <svg
-            width="40px"
-            height="40px"
+            width={size || "40px"}
+            height={size || "40px"}
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"

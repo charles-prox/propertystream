@@ -42,7 +42,6 @@ const PropertyDataTable = ({
 }) => {
     const { updateTableOptions } = useTableOptions();
     const { auth } = usePage().props;
-    const cost_threshold = 50000;
 
     // Load selected property keys from session storage on component mount
     const selectedProperties = JSON.parse(

@@ -14,6 +14,7 @@ import {
 import React from "react";
 import {
     AcquiredIcon,
+    EditIcon,
     InfoIcon,
     TVIcon,
     UserInfoIcon,
@@ -21,6 +22,8 @@ import {
 } from "../icons";
 import { decodeHtmlEntities } from "@/Utils/helpers";
 import { useTheme } from "@/Contexts/ThemeContext";
+import { AquisitionForm } from "./AquisitionForm";
+import Alert from "@/Components/Alert";
 
 const statusColorMap = {
     deployed: "success",
@@ -33,6 +36,9 @@ const statusColorMap = {
 const MoreInfo = ({ item }) => {
     const { theme } = useTheme();
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
+    const [isUpdated, setIsUpdated] = React.useState({
+        acquisition: false,
+    });
 
     return (
         <div className="relative flex items-center">
@@ -51,7 +57,7 @@ const MoreInfo = ({ item }) => {
             <Modal
                 isOpen={isOpen}
                 onOpenChange={onOpenChange}
-                placement="top-center"
+                placement="top"
                 size="2xl"
                 className={`${theme} text-foreground`}
             >
@@ -92,9 +98,26 @@ const MoreInfo = ({ item }) => {
                                                 />
                                             </div>
                                             <div className="flex-grow">
-                                                <h5 className="mb-4 font-bold">
-                                                    Property specifications
-                                                </h5>
+                                                <div className="flex">
+                                                    <h5 className="mb-4 font-bold flex-1">
+                                                        Property specifications
+                                                    </h5>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="light"
+                                                        startContent={
+                                                            <EditIcon
+                                                                width={15}
+                                                                height={15}
+                                                                fill={
+                                                                    "currentColor"
+                                                                }
+                                                            />
+                                                        }
+                                                    >
+                                                        Update
+                                                    </Button>
+                                                </div>
                                                 <div className="flex">
                                                     <p className="font-medium w-60 text-sm">
                                                         Property name
@@ -171,9 +194,28 @@ const MoreInfo = ({ item }) => {
                                                 <UserInfoIcon />
                                             </div>
                                             <div className="flex-grow">
-                                                <h5 className="mb-4 font-bold">
-                                                    End-user information
-                                                </h5>
+                                                <div className="flex">
+                                                    <h5 className="mb-4 font-bold flex-1">
+                                                        End-user information
+                                                    </h5>
+                                                    {item.assigned_to && (
+                                                        <Button
+                                                            size="sm"
+                                                            variant="light"
+                                                            startContent={
+                                                                <EditIcon
+                                                                    width={15}
+                                                                    height={15}
+                                                                    fill={
+                                                                        "currentColor"
+                                                                    }
+                                                                />
+                                                            }
+                                                        >
+                                                            Update
+                                                        </Button>
+                                                    )}
+                                                </div>
                                                 {item.assigned_to ? (
                                                     <>
                                                         <div className="flex">
@@ -229,17 +271,26 @@ const MoreInfo = ({ item }) => {
                                                         </div>
                                                     </>
                                                 ) : (
-                                                    <div className="flex justify-center">
-                                                        <UserWarningIcon
-                                                            width={30}
-                                                            height={30}
-                                                            fill="#9ca3af"
-                                                        />
-                                                        <Spacer x={5} />
-                                                        <h5 className="text-default-600">
-                                                            Pending deployment
-                                                            to a user
-                                                        </h5>
+                                                    <div className="flex flex-col justify-center gap-4">
+                                                        <div className="flex justify-center">
+                                                            <UserWarningIcon
+                                                                width={30}
+                                                                height={30}
+                                                                fill="#9ca3af"
+                                                            />
+                                                            <Spacer x={5} />
+                                                            <h5 className="text-default-600">
+                                                                Pending
+                                                                deployment to a
+                                                                user
+                                                            </h5>
+                                                        </div>
+                                                        <Button
+                                                            className="m-auto"
+                                                            color="primary"
+                                                        >
+                                                            Deploy ?
+                                                        </Button>
                                                     </div>
                                                 )}
                                             </div>
@@ -255,9 +306,64 @@ const MoreInfo = ({ item }) => {
                                                 <AcquiredIcon />
                                             </div>
                                             <div className="flex-grow">
-                                                <h5 className="mb-4 font-bold">
-                                                    Acquisition information
-                                                </h5>
+                                                <div className="flex">
+                                                    <h5 className="mb-4 font-bold flex-1">
+                                                        Acquisition information
+                                                    </h5>
+                                                    <AquisitionForm
+                                                        current={{
+                                                            property_id:
+                                                                item.id,
+                                                            supplier:
+                                                                item.supplier
+                                                                    ? item
+                                                                          .supplier
+                                                                          .name
+                                                                    : null,
+                                                            purchase_cost:
+                                                                item.purchase_cost,
+                                                            purchase_date:
+                                                                item.purchase_date
+                                                                    ? item
+                                                                          .purchase_date
+                                                                          .date
+                                                                    : null,
+                                                        }}
+                                                        isUpdated={(state) =>
+                                                            setIsUpdated(
+                                                                (
+                                                                    prevState
+                                                                ) => ({
+                                                                    ...prevState,
+                                                                    acquisition:
+                                                                        state,
+                                                                })
+                                                            )
+                                                        }
+                                                    />
+                                                </div>
+                                                {isUpdated.acquisition && (
+                                                    <Alert
+                                                        type="success"
+                                                        message={
+                                                            "Acquisition information was successfully updated."
+                                                        }
+                                                        variant={"flat"}
+                                                        isCloseable={true}
+                                                        iconSize={20}
+                                                        onClose={() =>
+                                                            setIsUpdated(
+                                                                (
+                                                                    prevState
+                                                                ) => ({
+                                                                    ...prevState,
+                                                                    acquisition: false,
+                                                                })
+                                                            )
+                                                        }
+                                                    />
+                                                )}
+
                                                 <div className="flex">
                                                     <p className="font-medium w-60 text-sm">
                                                         Supplier

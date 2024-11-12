@@ -128,4 +128,40 @@ class PropertyController extends Controller
         // Handle errors
         return response()->json(['error' => 'Unable to fetch data'], $properties->status());
     }
+
+    public function acquisition_update(Request $request)
+    {
+        $validated = $request->validate([
+            'id' => 'required|integer',
+            'purchase_cost' => 'required|numeric|min:0', // Validates that purchase_cost is required, numeric, and not negative
+            'purchase_date' => 'required|date|before_or_equal:today', // Validates that purchase_date is required, a valid date, and not a future date
+        ]);
+
+
+        $url = 'http://172.22.122.90/api/v1/hardware/' . $validated['id'];
+
+        try {
+
+            $result = Http::withHeaders([
+                'Authorization' => 'Bearer ' . config('snipeit.token'),
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ])->put($url, [
+                'purchase_date' => $validated['purchase_date'],
+                'purchase_cost' => $validated['purchase_cost'],
+            ]);
+
+            return back()->with('form', [
+                'result' => 'success',
+            ]);
+        } catch (\Exception $e) {
+            // Handle errors
+            return back()->with('form', [
+                'result' => 'error',
+                'errors' => $e->getMessage(),
+                'url' => $url,
+                'id' => $validated['id']
+            ]);
+        }
+    }
 }

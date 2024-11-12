@@ -1,5 +1,5 @@
 import React from "react";
-import { Head } from "@inertiajs/react";
+import { Head, usePage } from "@inertiajs/react";
 import PropertyDataTable from "@/Components/DataTables/PropertyDataTable";
 import { SearchFilterWidget } from "@/Components/DataTables/Modules/SearchFilterWidget";
 import { useTableOptions } from "@/Contexts/TableOptionsContext";
@@ -19,7 +19,7 @@ const PropertiesContent = () => {
     const tableId = "properties";
     const { getTableOptions } = useTableOptions();
     const tableOptions = getTableOptions(tableId);
-    // const { properties, properties_with_details } = usePage().props;
+    const { session } = usePage().props;
 
     const {
         data: data,
@@ -39,6 +39,12 @@ const PropertiesContent = () => {
     React.useEffect(() => {
         refetch();
     }, [tableOptions]);
+
+    React.useEffect(() => {
+        if (session?.form?.result === "success") {
+            refetch();
+        }
+    }, [session]);
 
     return (
         <React.Fragment>

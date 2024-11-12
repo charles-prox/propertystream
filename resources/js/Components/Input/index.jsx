@@ -8,6 +8,7 @@ const Input = ({
     startContent,
     endContent,
     isRequired,
+    isReadOnly = false,
     name,
     label,
     labelPlacement = "inside",
@@ -16,6 +17,7 @@ const Input = ({
     errorMessage,
     maxWidthClass,
     type = "text", // Default type is text, can be changed as needed
+    description,
 }) => {
     const handleChange = (event) => {
         if (onChange) onChange(event); // Call onChange with the dynamic type
@@ -44,6 +46,8 @@ const Input = ({
             startContent={startContent}
             endContent={endContent}
             isRequired={isRequired}
+            isReadOnly={isReadOnly}
+            description={description}
         />
     );
 };

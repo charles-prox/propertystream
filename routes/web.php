@@ -40,7 +40,8 @@ Route::middleware([
         Route::get('/', [PropertyController::class, 'index'])->name('properties');
         Route::post('get', [PropertyController::class, 'getProperties'])->name('properties.get');
         Route::post('selected', [PropertyDetailsController::class, 'index'])->name('properties.selected');
-        Route::post(' details', [PropertyDetailsController::class, 'store'])->name('properties.details');
+        Route::post('details', [PropertyDetailsController::class, 'store'])->name('properties.details');
+        Route::post('acquisition', [PropertyController::class, 'acquisition_update'])->name('acquisition.update');
     });
 
     Route::prefix('users')->group(function () {
